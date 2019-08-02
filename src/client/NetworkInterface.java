@@ -2,7 +2,6 @@ package client;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import share.Request;
 import share.RequestType;
