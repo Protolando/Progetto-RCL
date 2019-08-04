@@ -1,26 +1,29 @@
 package share;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.HashMap;
 
-public class Request implements Serializable {
-  private static final long serialVersionUID = 1;
+public class Request {
   private RequestType requestType;
-  private String payload;
+  private HashMap<String, String> payload;
 
-  public Request(RequestType requestType, String payload) {
+  @JsonCreator
+  public Request(@JsonProperty("RequestType") RequestType requestType, @JsonProperty("Payload") HashMap<String, String> payload) {
     this.requestType = requestType;
     this.payload = payload;
   }
 
   public Request(RequestType requestType) {
     this.requestType = requestType;
+    this.payload = new HashMap<>();
   }
 
-  public String getPayload() {
+  public HashMap<String, String> getPayload() {
     return payload;
   }
 
-  public void setPayload(String payload) {
+  public void setPayload(HashMap<String, String> payload) {
     this.payload = payload;
   }
 
@@ -28,12 +31,12 @@ public class Request implements Serializable {
     return requestType;
   }
 
-  @Override
-  public String toString() {
-    return "Request{" +
-        "requestType=" + requestType +
-        ", payload='" + payload + '\'' +
-        '}';
+  public void setRequestType(RequestType requestType) {
+    this.requestType = requestType;
+  }
+
+  public void putInPayload(String key, String data) {
+    payload.put(key, data);
   }
 }
 

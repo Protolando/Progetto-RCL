@@ -1,27 +1,26 @@
 package client.gui;
 
+import client.ClientActionListenerLogin;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 public class ClientGUILogin implements ClientGUIElement {
   /*Classe che si occupa di mostrare l'interfaccia utente*/
 
   private ResourceBundle stringsBundle;
-  private JButton login;
-  private JButton register;
   private JLabel UINotices;
   private JTextField passwordField;
   private JTextField usernameField;
   private JPanel panel;
 
-  public ClientGUILogin() {
+  public ClientGUILogin(ClientActionListenerLogin al) {
     stringsBundle = ResourceBundle.getBundle("client.resources.ClientStrings");
     panel = new JPanel();
 
@@ -62,17 +61,21 @@ public class ClientGUILogin implements ClientGUIElement {
     gridBag.setConstraints(passwordField, c);
     panel.add(passwordField);
 
-    login = new JButton(stringsBundle.getString("LoginBtn"));
+    JButton login = new JButton(stringsBundle.getString("LoginBtn"));
     c.gridx = 0;
     c.gridy = 2;
     gridBag.setConstraints(login, c);
     panel.add(login);
 
-    register = new JButton(stringsBundle.getString("RegisterBtn"));
+    JButton register = new JButton(stringsBundle.getString("RegisterBtn"));
     c.gridx = 1;
     c.gridy = 2;
     gridBag.setConstraints(register, c);
     panel.add(register);
+
+    /*Handler dei pulsanti*/
+    login.addActionListener(al);
+    register.addActionListener(al);
   }
 
   public JPanel getPanel() {
@@ -92,11 +95,10 @@ public class ClientGUILogin implements ClientGUIElement {
   }
 
   public void setUINotices(String notice) {
-    UINotices.setText(notice);
-    UINotices.setVisible(true);
-  }
-
-  public void setRegisterListener(ActionListener listener){
-    register.addActionListener(listener);
+    SwingUtilities.invokeLater(() -> {
+          UINotices.setText(notice);
+          UINotices.setVisible(true);
+        }
+    );
   }
 }

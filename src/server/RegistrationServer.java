@@ -2,29 +2,25 @@ package server;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 import share.*;
 
 public class RegistrationServer extends UnicastRemoteObject implements TURINGRegister {
-  private HashMap<String, String> users;
 
-  protected RegistrationServer(HashMap<String, String> users) throws RemoteException {
+  private TURINGServer server;
+
+  protected RegistrationServer(TURINGServer server) throws RemoteException {
     super();
-    this.users = users;
+    this.server = server;
   }
 
   @Override
-  public void register(String Username, String Password)
-      throws RemoteException, IllegalArgumentException, UsernameAlreadyUsedException {
+  public void register(String username, String password)
+      throws IllegalArgumentException, UsernameAlreadyUsedException {
     System.out.println("New Registration");
-    if(Username == null || Password == null || Username.equals("") || Password.equals(""))
+    if (username == null || password == null || username.equals("") || password.equals("")) {
       throw new IllegalArgumentException();
-
-    /*Controllo se lo username e` gia` utilizzato*/
-    if(users.get(Username.toLowerCase()) != null)
-      throw new UsernameAlreadyUsedException();
-    else {
-      users.put(Username.toLowerCase(), Password);
     }
+
+    server.register(username, password);
   }
 }

@@ -1,7 +1,6 @@
 package share;
 
 public enum RequestType {
-  REGISTER,
   LOGIN,
   LOGOUT,
   CREATE,
@@ -12,5 +11,6 @@ public enum RequestType {
   SHOW_SECTION,
   SHOW_DOCUMENT,
   GET_MESSAGES,
-  SEND_MESSAGE
+  SEND_MESSAGE,
+  SERVER_RESPONSE
 }

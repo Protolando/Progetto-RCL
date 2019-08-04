@@ -122,6 +122,9 @@ public class ClientGUIMenu implements ClientGUIElement {
     return stringsBundle.getString("WindowName");
   }
 
+  @Override
+  public void setUINotices(String s) {}
+
   public String getSection() {
     return section.getText();
   }

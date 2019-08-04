@@ -102,4 +102,7 @@ public class ClientGUIDocument implements ClientGUIElement {
   public String getWindowTitle() {
     return filename;
   }
+
+  @Override
+  public void setUINotices(String s) {}
 }
