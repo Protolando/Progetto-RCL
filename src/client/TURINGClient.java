@@ -18,7 +18,7 @@ public class TURINGClient {
   static final String ServerAddres = "127.0.0.1";
   static final int ServerPort = 4562;
   private final ClientGUIHandler GUI;
-  private NetworkInterface networkInterface;
+  private NetworkHandler networkHandler;
   private ClientGUILogin login;
   private ResourceBundle strings;
   private ClientGUIMenu menu;
@@ -29,9 +29,9 @@ public class TURINGClient {
   }
 
   public TURINGClient() {
-    networkInterface = null;
+    networkHandler = null;
     try {
-      networkInterface = new NetworkInterface();
+      networkHandler = new NetworkHandler();
     } catch (IOException e) {
       e.printStackTrace(); /*Server offline TODO SHOW POPUP*/
     }
@@ -49,7 +49,7 @@ public class TURINGClient {
     }
 
     try {
-      NetworkInterface.sendRegisterRequest(login.getUsernameField(),
+      NetworkHandler.sendRegisterRequest(login.getUsernameField(),
           login.getPasswordField());
       GUI.setUINotices(strings.getString("RegistrationSuccessful"));
     } catch (
@@ -101,7 +101,7 @@ public class TURINGClient {
     new SwingWorker<Request, Object>() {
       @Override
       protected Request doInBackground() throws Exception {
-        return networkInterface.sendMessageForResult(r);
+        return networkHandler.sendMessageForResult(r);
       }
 
       @Override

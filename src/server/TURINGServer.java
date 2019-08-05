@@ -5,11 +5,12 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -19,6 +20,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import share.NetworkIntefrace;
 import share.Request;
 import share.TURINGRegister;
 import share.UsernameAlreadyUsedException;
@@ -28,15 +30,15 @@ public class TURINGServer {
 
   private final static int regPort = 3141;
   private final static int tcpPort = 4562;
-  private final static int BUFFER_CAPACITY = 1024;
+  private final static int BUFFER_SIZE = 1024;
   private final static int poolSize = 10;
 
   private HashMap<String, String> registeredUsers;
   private HashSet<LoggedUser> loggedUsers;
   private ObjectMapper mapper;
   private ThreadPoolExecutor threadPool;
-  private ByteBuffer buffer;
   private Selector selector;
+  private NetworkIntefrace networkInterface;
 
   TURINGServer() {
     /*Lista degli utenti registrati*/
@@ -48,8 +50,7 @@ public class TURINGServer {
     mapper = new ObjectMapper();
     /*Inizializzo il thread pool*/
     threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(poolSize);
-    /*Buffer per la lettura da socket*/
-    buffer = ByteBuffer.allocate(BUFFER_CAPACITY);
+    networkInterface = new NetworkIntefrace();
   }
 
   private void startRMIServer() throws RemoteException {
@@ -71,6 +72,7 @@ public class TURINGServer {
     selector = Selector.open();
     /*Di default voglio essere notificato di tutte le richieste di connessione*/
     serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+    System.out.println("ServerChannel pronto.");
   }
 
   private Set<SelectionKey> getSelectedKeys() throws IOException {
@@ -83,7 +85,7 @@ public class TURINGServer {
     /*Se la key e` accettabile accetto la connessione e registro il canale per la lettura*/
     ServerSocketChannel socket = (ServerSocketChannel) key.channel();
     SocketChannel client = socket.accept();
-    System.out.println("Accepted connection from " + client);
+    System.out.println("Accettata connessione da " + client);
     client.configureBlocking(false);
     /*Registro il client per la lettura*/
     client.register(selector, SelectionKey.OP_READ);
@@ -91,34 +93,31 @@ public class TURINGServer {
 
   private void readFromChannel(SelectionKey key) throws IOException {
     SocketChannel client = (SocketChannel) key.channel();
-    buffer.clear();
-    /*Leggo tutti i dati inviati e li salvo in una stringa (assumo che le comunicazioni siano sempre stringhe JSON)*/
-    StringBuilder builder = new StringBuilder();
-    /*Finche` la lettura ha successo*/
-    while (client.read(buffer) > 0) {
-      buffer.flip();
-      /*Svuoto il buffer*/
-      builder.append(buffer.asCharBuffer());
-      buffer.clear();
-    }
+
     /*Istanzio il messaggio letto in una classe request*/
-    Request r = mapper.readValue(builder.toString(), Request.class);
+    Request r = mapper.readValue(networkInterface.read(client), Request.class);
     /*Sottometto il task al thread pool*/
     threadPool.execute(new ServerTask(this, r, key));
   }
 
-  void addToSelector(SelectionKey key, int op) throws ClosedChannelException {
-    key.channel().register(selector, op);
+  void addInterestToKey(SelectionKey key, int op) {
+    key.interestOps(key.interestOps() | op);
+    selector.wakeup();
+  }
+
+  void removeInterestFromKey(SelectionKey key, int op) {
+    key.interestOps(key.interestOps() & ~op);
   }
 
   private void writeToChannel(SelectionKey key) throws IOException {
     SocketChannel client = (SocketChannel) key.channel();
-    buffer.clear();
     /*Scrivo nel buffer il contenuto dell'attachment di key*/
-    buffer.put(mapper.writeValueAsString(key.attachment()).getBytes());
-    /*Mando il buffer al client*/
-    client.write(buffer);
-    buffer.clear();
+    String message = (String) key.attachment();
+
+    networkInterface.write(client, message);
+
+    /*Rimuovo il channel dagli scrivibili*/
+    removeInterestFromKey(key, SelectionKey.OP_WRITE);
   }
 
   boolean isRegistered(String username) {
@@ -134,9 +133,9 @@ public class TURINGServer {
 
   void register(String username, String password) throws UsernameAlreadyUsedException {
     /*Controllo se lo username e` gia` utilizzato*/
-    if(registeredUsers.get(username.toLowerCase()) != null)
+    if (registeredUsers.get(username.toLowerCase()) != null) {
       throw new UsernameAlreadyUsedException();
-    else {
+    } else {
       registeredUsers.put(username.toLowerCase(), password);
     }
   }
@@ -173,7 +172,8 @@ public class TURINGServer {
             server.acceptNewConnection(key);
           } else if (key.isReadable()) {
             server.readFromChannel(key);
-          } if (key.isWritable()) {
+          }
+          if (key.isWritable()) {
             server.writeToChannel(key);
           }
         } catch (IOException ex) {

@@ -38,5 +38,13 @@ public class Request {
   public void putInPayload(String key, String data) {
     payload.put(key, data);
   }
+
+  @Override
+  public String toString() {
+    return "Request{" +
+        "requestType=" + requestType +
+        ", payload=" + payload +
+        '}';
+  }
 }
 

@@ -1,41 +1,40 @@
 package client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.SocketChannel;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import share.NetworkIntefrace;
 import share.Request;
 import share.ServerErrorException;
 import share.TURINGRegister;
 import share.UsernameAlreadyUsedException;
 
-public class NetworkInterface {
+public class NetworkHandler {
 
-  private Socket connection;
-  private BufferedWriter out;
-  private BufferedReader in;
+  private SocketChannel connection;
+  private NetworkIntefrace networkIntefrace;
 
-  public NetworkInterface() throws IOException {
-    connection = new Socket(TURINGClient.ServerAddres, TURINGClient.ServerPort);
-    in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-    out = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
+  public NetworkHandler() throws IOException {
+    SocketAddress address = new InetSocketAddress(TURINGClient.ServerAddres,
+        TURINGClient.ServerPort);
+    connection = SocketChannel.open(address);
+    networkIntefrace = new NetworkIntefrace();
   }
 
   public Request sendMessageForResult(Request request) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
-    String message = mapper.writeValueAsString(request);
-    out.write(message  + "\n");
-    out.flush();
-    String res = in.readLine();
+    String msg = mapper.writeValueAsString(request);
+    networkIntefrace.write(connection, msg);
 
-    return mapper.readValue(res, Request.class);
+    return mapper.readValue(networkIntefrace.read(connection), Request.class);
   }
 
   public static void sendRegisterRequest(String username, String password)

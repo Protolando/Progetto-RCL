@@ -22,9 +22,12 @@ public class ServerTask implements Runnable {
 
   @Override
   public void run() {
+    System.out.println("Processando richiesta: " + request.getRequestType());
+
     Request reply = new Request(request.getRequestType());
     switch (request.getRequestType()) {
       case LOGIN:
+        ;
         if (request.getPayload() == null) {
           /*Se non c'e` il payload...*/
           reply.putInPayload("Message", "Parametri non validi");
@@ -38,7 +41,7 @@ public class ServerTask implements Runnable {
           } else {
             if (!server.isRegistered(username)) {
               reply.putInPayload("Message", "Utente non trovato");
-            } else if (!server.isLoggedIn(username)) {
+            } else if (server.isLoggedIn(username)) {
               reply.putInPayload("Message", "Utente gia` connesso");
             } else {
               try {
@@ -81,17 +84,13 @@ public class ServerTask implements Runnable {
     ObjectMapper mapper = new ObjectMapper();
     try {
       /*Converto la risposta in JSON string e la attacco alla chiave*/
-      key.attach(mapper.writeValueAsString(reply));
+      String strReply = mapper.writeValueAsString(reply);
+      key.attach(strReply);
     } catch (
         JsonProcessingException e) {
       e.printStackTrace();
     }
 
-    try {
-      server.addToSelector(key, SelectionKey.OP_WRITE);
-    } catch (
-        ClosedChannelException e) {
-      e.printStackTrace();
-    }
+    server.addInterestToKey(key, SelectionKey.OP_WRITE);
   }
 }
