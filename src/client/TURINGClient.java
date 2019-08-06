@@ -15,7 +15,7 @@ import share.UsernameAlreadyUsedException;
 
 public class TURINGClient {
 
-  static final String ServerAddres = "127.0.0.1";
+  static final String ServerAddress = "127.0.0.1";
   static final int ServerPort = 4562;
   private final ClientGUIHandler GUI;
   private NetworkHandler networkHandler;
@@ -68,10 +68,8 @@ public class TURINGClient {
     /*Inserisco il payload in r*/
     switch (r.getRequestType()) {
       case LOGIN:
-        HashMap<String, String> payload = new HashMap<>();
-        payload.put("Username", login.getUsernameField());
-        payload.put("Password", login.getPasswordField());
-        r.setPayload(payload);
+        r.putInPayload("Username", login.getUsernameField());
+        r.putInPayload("Password", login.getPasswordField());
         break;
       case LOGOUT:
         break;

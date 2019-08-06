@@ -7,13 +7,13 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public class NetworkIntefrace {
+public class NetworkInterface {
 
   private ByteBuffer buffer;
-  private static final int BUFFER_SIZE = 1024;
   private Charset charset;
+  private static final int BUFFER_SIZE = 1024;
 
-  public NetworkIntefrace() {
+  public NetworkInterface() {
     this.buffer = ByteBuffer.allocate(BUFFER_SIZE);
     charset = StandardCharsets.UTF_8;
   }
@@ -41,16 +41,22 @@ public class NetworkIntefrace {
   public String read(SocketChannel connection) throws IOException {
     /*Leggo il messaggio*/
     buffer.clear();
-    connection.read(buffer);
+
+    if (connection.read(buffer) == -1) {
+      return null;
+    }
+
     buffer.flip();
 
     /*Leggo la dimensione del messaggio*/
     CharBuffer msg = charset.decode(buffer);
     char read = msg.get();
     StringBuilder builder = new StringBuilder();
+    /*Costruisco la dimensione del messaggio carattere per carattere*/
     while (Character.isDigit(read)) {
-      msg.mark();
       builder.append(read);
+      /*Salvo la posizione dell'ultima cifra letta*/
+      msg.mark();
       if (msg.hasRemaining()) {
         read = msg.get();
       } else {
@@ -58,7 +64,7 @@ public class NetworkIntefrace {
       }
     }
     int nchars = Integer.parseInt(builder.toString());
-    /*Il mark e` sul primo carattere non cifra*/
+    /*Posiziono il buffer al primo carattere non cifra*/
     msg.reset();
 
     /*Leggo tutti i dati inviati e li salvo in una stringa (assumo che le comunicazioni siano sempre stringhe JSON)*/

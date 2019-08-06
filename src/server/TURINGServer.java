@@ -4,58 +4,49 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import share.NetworkIntefrace;
+import share.NetworkInterface;
 import share.Request;
 import share.TURINGRegister;
-import share.UsernameAlreadyUsedException;
+import share.UserNotFoundException;
 import share.WrongPasswordException;
 
 public class TURINGServer {
 
   private final static int regPort = 3141;
   private final static int tcpPort = 4562;
-  private final static int BUFFER_SIZE = 1024;
   private final static int poolSize = 10;
 
-  private HashMap<String, String> registeredUsers;
-  private HashSet<LoggedUser> loggedUsers;
+  private HashMap<String, LoggedUser> loggedUsers;
   private ObjectMapper mapper;
   private ThreadPoolExecutor threadPool;
   private Selector selector;
-  private NetworkIntefrace networkInterface;
+  private NetworkInterface networkInterface;
 
   TURINGServer() {
-    /*Lista degli utenti registrati*/
-    registeredUsers = new HashMap<>();
-    /*TODO leggere la lista da file*/
     /*Hash set che contiene gli utenti connessi*/
-    loggedUsers = new HashSet<>();
+    loggedUsers = new HashMap<>();
     /*Inizializzo il JSON mapper*/
     mapper = new ObjectMapper();
     /*Inizializzo il thread pool*/
     threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(poolSize);
-    networkInterface = new NetworkIntefrace();
+    networkInterface = new NetworkInterface();
   }
 
   private void startRMIServer() throws RemoteException {
     /*Inizializzazione del registry per l'RMI (Registrazione)*/
-    TURINGRegister stub = new RegistrationServer(this);
+    TURINGRegister stub = new RegistrationServer();
     LocateRegistry.createRegistry(regPort);
     Registry r = LocateRegistry.getRegistry(regPort);
     r.rebind(TURINGRegister.SERVICE_NAME, stub);
@@ -94,8 +85,14 @@ public class TURINGServer {
   private void readFromChannel(SelectionKey key) throws IOException {
     SocketChannel client = (SocketChannel) key.channel();
 
+    String reply = networkInterface.read(client);
+
+    if (reply == null) {
+      return;
+    }
+
     /*Istanzio il messaggio letto in una classe request*/
-    Request r = mapper.readValue(networkInterface.read(client), Request.class);
+    Request r = mapper.readValue(reply, Request.class);
     /*Sottometto il task al thread pool*/
     threadPool.execute(new ServerTask(this, r, key));
   }
@@ -120,23 +117,32 @@ public class TURINGServer {
     removeInterestFromKey(key, SelectionKey.OP_WRITE);
   }
 
-  boolean isRegistered(String username) {
-    return (registeredUsers.get(username.toLowerCase()) != null);
-  }
-
   boolean isLoggedIn(String username) {
-    return false;
+    return loggedUsers.get(username) != null;
   }
 
-  void login(String username, String password) throws WrongPasswordException {
-  }
+  void login(String username, String password)
+      throws WrongPasswordException, UserNotFoundException, IllegalArgumentException {
+    if (username == null || username.equals("") || password == null || password.equals("")) {
+      throw new IllegalArgumentException();
+    }
 
-  void register(String username, String password) throws UsernameAlreadyUsedException {
-    /*Controllo se lo username e` gia` utilizzato*/
-    if (registeredUsers.get(username.toLowerCase()) != null) {
-      throw new UsernameAlreadyUsedException();
+    if (!UsersManager.isRegistered(username)) {
+      throw new UserNotFoundException();
     } else {
-      registeredUsers.put(username.toLowerCase(), password);
+      User u;
+      try {
+        u = mapper.readValue(FilesManager.readFromFile(UsersManager.buildUserFilePath(username)),
+            User.class);
+      } catch (IOException e) {
+        e.printStackTrace();
+        return;
+      }
+      if (u.getUsername().equals(password)) {
+        loggedUsers.put(username, new LoggedUser(username, null));
+      } else {
+        throw new WrongPasswordException();
+      }
     }
   }
 

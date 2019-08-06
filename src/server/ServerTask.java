@@ -6,6 +6,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import share.Request;
 import share.RequestType;
+import share.UserNotFoundException;
 import share.WrongPasswordException;
 
 public class ServerTask implements Runnable {
@@ -39,7 +40,7 @@ public class ServerTask implements Runnable {
             /*... o i parametri sono invalidi*/
             reply.putInPayload("Message", "Parametri non validi");
           } else {
-            if (!server.isRegistered(username)) {
+            if (!UsersManager.isRegistered(username)) {
               reply.putInPayload("Message", "Utente non trovato");
             } else if (server.isLoggedIn(username)) {
               reply.putInPayload("Message", "Utente gia` connesso");
@@ -49,6 +50,8 @@ public class ServerTask implements Runnable {
                 reply.putInPayload("Message", "OK");
               } catch (WrongPasswordException e) {
                 reply.putInPayload("Message", "Password errata");
+              } catch (UserNotFoundException e) {
+                reply.putInPayload("Message", "Utente non trovato");
               }
 
             }
