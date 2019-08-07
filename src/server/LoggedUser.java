@@ -1,22 +1,22 @@
 package server;
 
-import java.nio.channels.SocketChannel;
+import java.nio.channels.SelectionKey;
 
 public class LoggedUser {
 
   private String username;
-  private SocketChannel channel;
+  private SelectionKey key;
 
   public String getUsername() {
     return username;
   }
 
-  public SocketChannel getSocket() {
-    return channel;
+  public SelectionKey getKey() {
+    return key;
   }
 
-  public LoggedUser(String username, SocketChannel socket) {
+  public LoggedUser(String username, SelectionKey socket) {
     this.username = username;
-    this.channel = socket;
+    this.key = socket;
   }
 }

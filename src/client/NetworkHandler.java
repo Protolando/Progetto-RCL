@@ -48,4 +48,10 @@ public class NetworkHandler {
       throw new ServerErrorException();
     }
   }
+
+  public void sendMessage(Request r) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    String msg = mapper.writeValueAsString(r);
+    networkInterface.write(connection, msg);
+  }
 }

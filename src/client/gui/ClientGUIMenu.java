@@ -1,5 +1,6 @@
 package client.gui;
 
+import client.ClientActionListenerMenu;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -21,11 +22,12 @@ public class ClientGUIMenu implements ClientGUIElement {
   private JButton showWhole;
   private JButton update;
   private JButton logout;
+  private JButton newFile;
   private JList<String> filesList;
   private JTextField section;
   private JPanel panel;
 
-  public ClientGUIMenu(ArrayList<String> DocumentNames) {
+  public ClientGUIMenu(ArrayList<String> DocumentNames, ClientActionListenerMenu al) {
     stringsBundle = ResourceBundle.getBundle("client.resources.ClientStrings");
 
     panel = new JPanel();
@@ -40,7 +42,7 @@ public class ClientGUIMenu implements ClientGUIElement {
     c.gridy = 0;
     c.weightx = 0.8;
     c.weighty = 0.8;
-    c.gridwidth = 2;
+    c.gridwidth = 3;
     c.insets = new Insets(20, 20, 20, 20);
     c.fill = GridBagConstraints.BOTH;
     JScrollPane scroll = new JScrollPane(filesList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -48,35 +50,68 @@ public class ClientGUIMenu implements ClientGUIElement {
     gridBag.setConstraints(scroll, c);
     panel.add(scroll);
     c.gridwidth = 1;
-    c.fill = GridBagConstraints.NONE;
+    c.fill = GridBagConstraints.BOTH;
     c.insets = new Insets(10, 10, 10, 10);
+    c.fill = GridBagConstraints.NONE;
 
-    JLabel sectionLabel = new JLabel(stringsBundle.getString("Section"));
+    update = new JButton(stringsBundle.getString("Update"));
     c.gridx = 0;
     c.gridy = 1;
     c.weightx = 0.1;
     c.weighty = 0.1;
-    c.anchor = GridBagConstraints.EAST;
-    gridBag.setConstraints(sectionLabel, c);
-    panel.add(sectionLabel);
+    c.anchor = GridBagConstraints.WEST;
+    gridBag.setConstraints(update, c);
+    panel.add(update);
 
-    section = new JTextField(10);
+    newFile = new JButton(stringsBundle.getString("NewFile"));
+    c.gridx = 0;
+    c.gridy = 2;
+    c.weightx = 0.1;
+    c.weighty = 0.1;
+    c.anchor = GridBagConstraints.WEST;
+    gridBag.setConstraints(newFile, c);
+    panel.add(newFile);
+
+    showWhole = new JButton(stringsBundle.getString("ShowWhole"));
+    c.gridx = 0;
+    c.gridy = 3;
+    c.weightx = 0.1;
+    c.weighty = 0.1;
+    c.anchor = GridBagConstraints.WEST;
+    gridBag.setConstraints(showWhole, c);
+    panel.add(showWhole);
+
+    JPanel sectionPanel = new JPanel();
+    GridBagLayout gridBagTmp = new GridBagLayout();
+    GridBagConstraints c1 = new GridBagConstraints();
+    sectionPanel.setLayout(gridBagTmp);
+
+    JLabel sectionLabel = new JLabel(stringsBundle.getString("Section"));
+    c1.gridx = 0;
+    c1.gridy = 0;
+    c1.weightx = 0.1;
+    c1.weighty = 0.1;
+    c1.anchor = GridBagConstraints.WEST;
+    gridBagTmp.setConstraints(sectionLabel, c1);
+    sectionPanel.add(sectionLabel);
+
+    section = new JTextField(5);
+    c1.gridx = 1;
+    c1.gridy = 0;
+    c1.weightx = 0.1;
+    c1.weighty = 0.1;
+    c1.anchor = GridBagConstraints.WEST;
+    gridBagTmp.setConstraints(section, c1);
+    sectionPanel.add(section);
+
+
     c.gridx = 1;
     c.gridy = 1;
     c.weightx = 0.1;
     c.weighty = 0.1;
     c.anchor = GridBagConstraints.WEST;
-    gridBag.setConstraints(section, c);
-    panel.add(section);
-
-    update = new JButton(stringsBundle.getString("Update"));
-    c.gridx = 0;
-    c.gridy = 2;
-    c.weightx = 0.1;
-    c.weighty = 0.1;
-    c.anchor = GridBagConstraints.EAST;
-    gridBag.setConstraints(update, c);
-    panel.add(update);
+    gridBag.setConstraints(sectionPanel, c);
+    panel.add(sectionPanel);
 
     edit = new JButton(stringsBundle.getString("Edit"));
     c.gridx = 1;
@@ -88,30 +123,29 @@ public class ClientGUIMenu implements ClientGUIElement {
     panel.add(edit);
 
     show = new JButton(stringsBundle.getString("Show"));
-    c.gridx = 0;
-    c.gridy = 3;
-    c.weightx = 0.1;
-    c.weighty = 0.1;
-    c.anchor = GridBagConstraints.EAST;
-    gridBag.setConstraints(show, c);
-    panel.add(show);
-
-    showWhole = new JButton(stringsBundle.getString("ShowWhole"));
     c.gridx = 1;
     c.gridy = 3;
     c.weightx = 0.1;
     c.weighty = 0.1;
     c.anchor = GridBagConstraints.WEST;
-    gridBag.setConstraints(showWhole, c);
-    panel.add(showWhole);
+    gridBag.setConstraints(show, c);
+    panel.add(show);
 
     logout = new JButton(stringsBundle.getString("Logout"));
     c.gridx = 0;
     c.gridy = 4;
     c.weightx = 0.1;
     c.weighty = 0.1;
+    c.anchor = GridBagConstraints.WEST;
     gridBag.setConstraints(logout, c);
     panel.add(logout);
+
+    edit.addActionListener(al);
+    show.addActionListener(al);
+    showWhole.addActionListener(al);
+    update.addActionListener(al);
+    logout.addActionListener(al);
+    newFile.addActionListener(al);
   }
 
   public JPanel getPanel() {

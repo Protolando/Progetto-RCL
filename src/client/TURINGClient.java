@@ -5,11 +5,13 @@ import client.gui.ClientGUILogin;
 import client.gui.ClientGUIMenu;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import share.Request;
+import share.RequestType;
 import share.ServerErrorException;
 import share.UsernameAlreadyUsedException;
 
@@ -71,10 +73,6 @@ public class TURINGClient {
         r.putInPayload("Username", login.getUsernameField());
         r.putInPayload("Password", login.getPasswordField());
         break;
-      case LOGOUT:
-        break;
-      case CREATE:
-        break;
       case INVITE:
         break;
       case LIST:
@@ -106,7 +104,36 @@ public class TURINGClient {
       protected void done() {
         try {
           update(get());
-        } catch (InterruptedException | ExecutionException ignored) {}
+        } catch (InterruptedException | ExecutionException ignored) {
+        }
+      }
+    }.execute();
+  }
+
+  public void sendMessage(Request r) {
+    switch (r.getRequestType()) {
+      case LOGOUT:
+        login = new ClientGUILogin(new ClientActionListenerLogin(this));
+        GUI.switchPanel(login);
+        /*TODO close connection*/
+        break;
+      case CREATE:
+        JTextField fileName = new JTextField();
+        JTextField nSections = new JTextField();
+        GUI.showPopup(new Object[]{
+            "Nome File: ", fileName,
+            "Numero Sezioni:", nSections
+        });
+        r.putInPayload("Filename", fileName.getText());
+        r.putInPayload("nSections", nSections.getText());
+        break;
+    }
+
+    new SwingWorker() {
+      @Override
+      protected Object doInBackground() throws IOException {
+        networkHandler.sendMessage(r);
+        return null;
       }
     }.execute();
   }
@@ -116,20 +143,23 @@ public class TURINGClient {
       case LOGIN:
         if (r.getPayload().get("Message").equals("OK")) {
           if (menu == null) {
-            menu = new ClientGUIMenu(new ArrayList<>());
+            menu = new ClientGUIMenu(new ArrayList<>(), new ClientActionListenerMenu(this));
           }
           GUI.switchPanel(menu);
+          sendMessageForResult(new Request(RequestType.LIST));
         } else {
           GUI.setUINotices(r.getPayload().get("Message"));
         }
         break;
-      case LOGOUT:
-        break;
-      case CREATE:
-        break;
       case INVITE:
         break;
       case LIST:
+        int listElems = Integer.parseInt(r.getPayload().get("nfiles"));
+        ArrayList<String> listaFiles = new ArrayList<>();
+        for (int i = 0; i < listElems; i++) {
+          listaFiles.add(r.getPayload().get(String.valueOf(i)));
+        }
+        SwingUtilities.invokeLater(() -> menu.updateFileList(listaFiles));
         break;
       case EDIT:
         break;

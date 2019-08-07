@@ -5,9 +5,11 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.stream.Stream;
@@ -67,17 +69,52 @@ class FilesManager {
     return builder.toString();
   }
 
-  static String[] getFilesInDir(String dirpath) { ;
-    try (Stream<Path> stream = Files.walk(Paths.get(dirpath+"."), 0)) {
+  static String[] getFilesInDir(String dirpath) {
+    try (Stream<Path> stream = Files.walk(Paths.get(dirpath))) {
+      /*Cerco tutti i file che terminano con .TURINGFile e ne restituisco un array (senza l'estensione)*/
+      PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:*.TURINGFile");
       return stream
-          .filter(file -> Files.isDirectory(file) && !file.getFileName().toString().equals("."))
+          .filter(file -> (Files.isDirectory(file) && matcher.matches(file.getFileName())))
           .map(Path::getFileName)
           .map(Path::toString)
+          .map(s -> s.substring(0, s.lastIndexOf('.')))
           .distinct()
           .toArray(String[]::new);
     } catch (IOException e) {
       e.printStackTrace();
     }
     return null;
+  }
+
+  public static void newFile(String filepath, String filename, int nSections) throws IOException {
+    String actualFilePath = filepath + "/" + filename + ".TURINGFile";
+    Path path = Paths.get(actualFilePath);
+    /*Creo tutte le cartelle per il percorso*/
+    Files.createDirectories(path.subpath(0, path.getNameCount()));
+
+    /*Creo un file vuoto per ogni sezione (1.section, 2.section, ...)*/
+    for (int i = 0; i < nSections; i++) {
+      Path sectionPath = Paths.get(actualFilePath + "/" + i + ".section");
+      if (!Files.exists(sectionPath, LinkOption.NOFOLLOW_LINKS)) {
+        Files.createFile(sectionPath);
+      }
+    }
+  }
+
+  public static int getNSections(String path) {
+    try (Stream<Path> stream = Files.walk(Paths.get(path + ".TURINGFile"))) {
+      /*Cerco tutti i file che terminano con .section e ne restituisco il numero*/
+      PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:*.section");
+      return stream
+          .filter(file -> (matcher.matches(file.getFileName())))
+          .map(Path::getFileName)
+          .map(Path::toString)
+          .distinct()
+          .toArray(String[]::new)
+          .length;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return 0;
   }
 }

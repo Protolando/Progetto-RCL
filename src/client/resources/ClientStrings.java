@@ -17,6 +17,7 @@ public class ClientStrings extends ListResourceBundle {
         {"Quit", "Esci"},
         {"Edit", "Modifica Sezione"},
         {"Show", "Mostra sezione"},
+        {"NewFile", "Nuovo File"},
         {"ShowWhole", "Mostra tutto"},
         {"Update", "Aggiorna Lista"},
         {"Section", "Sezione"},

@@ -118,10 +118,27 @@ public class TURINGServer {
   }
 
   boolean isLoggedIn(String username) {
+    if (loggedUsers.get(username) != null && loggedUsers.get(username).getKey() != null
+        && !loggedUsers.get(username).getKey().isValid()) {
+      logout(username);
+    }
     return loggedUsers.get(username) != null;
   }
 
-  void login(String username, String password)
+  void logout(String username) {
+    if (loggedUsers.get(username).getKey() != null) {
+      try {
+        loggedUsers.get(username).getKey().channel().close();
+      } catch (IOException ignored) {
+      }
+      /*Cancello la chiave*/
+      loggedUsers.get(username).getKey().cancel();
+    }
+    /*Chiudo il canale se necessario*/
+    loggedUsers.remove(username);
+  }
+
+  void login(String username, String password, SelectionKey key)
       throws WrongPasswordException, UserNotFoundException, IllegalArgumentException {
     if (username == null || username.equals("") || password == null || password.equals("")) {
       throw new IllegalArgumentException();
@@ -132,18 +149,26 @@ public class TURINGServer {
     } else {
       User u;
       try {
-        u = mapper.readValue(FilesManager.readFromFile(UsersManager.buildUserFilePath(username)),
-            User.class);
+        u = UsersManager.getUserData(username);
       } catch (IOException e) {
         e.printStackTrace();
         return;
       }
-      if (u.getUsername().equals(password)) {
-        loggedUsers.put(username, new LoggedUser(username, null));
+      if (u.getPassword().equals(password)) {
+        loggedUsers.put(username, new LoggedUser(username, key));
       } else {
         throw new WrongPasswordException();
       }
     }
+  }
+
+  public LoggedUser getUserFromKey(SelectionKey key) {
+    for (String username : loggedUsers.keySet()) {
+      if (key.equals(loggedUsers.get(username).getKey())) {
+        return loggedUsers.get(username);
+      }
+    }
+    return null;
   }
 
   public static void main(String[] args) {
@@ -178,8 +203,7 @@ public class TURINGServer {
             server.acceptNewConnection(key);
           } else if (key.isReadable()) {
             server.readFromChannel(key);
-          }
-          if (key.isWritable()) {
+          } else if (key.isWritable()) {
             server.writeToChannel(key);
           }
         } catch (IOException ex) {

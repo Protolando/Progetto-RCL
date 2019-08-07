@@ -1,6 +1,7 @@
 package client.gui;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 public class ClientGUIHandler extends JFrame {
@@ -27,5 +28,9 @@ public class ClientGUIHandler extends JFrame {
   public void setUINotices(String s) {
     /*Eseguo nel thread dell'UI*/
     SwingUtilities.invokeLater(() -> active.setUINotices(s));
+  }
+
+  public void showPopup(Object[] o){
+    JOptionPane.showConfirmDialog(this, o);
   }
 }

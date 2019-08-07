@@ -43,6 +43,8 @@ public class NetworkInterface {
     buffer.clear();
 
     if (connection.read(buffer) == -1) {
+      /*La connessione e` stata chiusa, ho letto EOF*/
+      connection.close();
       return null;
     }
 
