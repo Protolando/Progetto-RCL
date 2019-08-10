@@ -3,6 +3,7 @@ package client.gui;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
@@ -20,7 +21,8 @@ public class ClientGUIDocument implements ClientGUIElement {
   private String filename;
   private JPanel panel;
 
-  public ClientGUIDocument(String filename, String fileText) {
+  public ClientGUIDocument(String filename, String fileText, boolean editable,
+      ActionListener al) {
     stringsBundle = ResourceBundle.getBundle("client.resources.ClientStrings");
 
     this.filename = filename;
@@ -33,6 +35,7 @@ public class ClientGUIDocument implements ClientGUIElement {
     c.insets = new Insets(10, 10, 10, 10);
 
     document = new JTextArea(fileText);
+    document.setEditable(editable);
     document.setLineWrap(true);
     c.fill = GridBagConstraints.BOTH;
     c.gridx = 0;
@@ -77,6 +80,9 @@ public class ClientGUIDocument implements ClientGUIElement {
     c.gridheight = GridBagConstraints.REMAINDER;
     gridBag.setConstraints(chat.getPanel(), c);
     panel.add(chat.getPanel());
+
+    commit.addActionListener(al);
+    quit.addActionListener(al);
   }
 
   public String getDocument() {
@@ -104,5 +110,6 @@ public class ClientGUIDocument implements ClientGUIElement {
   }
 
   @Override
-  public void setUINotices(String s) {}
+  public void setUINotices(String s) {
+  }
 }

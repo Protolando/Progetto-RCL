@@ -80,7 +80,7 @@ public class ServerTask implements Runnable {
             reply.putInPayload("Message", "Parametri non validi");
           } else {
             try {
-              FilesManager
+              UsersManager
                   .newFile(UsersManager.buildUserPath(user.getUsername()), filename, nSections);
             } catch (IOException e) {
               reply.putInPayload("Message", "Errore nella crazione del file");
@@ -107,12 +107,84 @@ public class ServerTask implements Runnable {
         }
         break;
       case EDIT:
-        break;
-      case END_EDIT:
+        if (user == null) {
+          reply.putInPayload("Message", "Utente non connesso");
+        } else {
+          String filename = request.getPayload().get("filename");
+          if (!server.canBeEdited(filename)) {
+            reply.putInPayload("Message", "File gia` in uso da un altro utente");
+          } else {
+            String username = user.getUsername();
+            String ownername;
+            if (!filename.contains("/")) {
+              ownername = username;
+            } else {
+              ownername = filename.substring(0, filename.indexOf('/'));
+              filename = filename.substring(filename.indexOf('/') + 1);
+            }
+            int nSection = Integer.parseInt(request.getPayload().get("nSection"));
+            try {
+              reply.putInPayload("file", UsersManager.getFile(ownername, filename, nSection));
+              server
+                  .addToEditing(new ServerFile(ownername, filename, nSection, user.getUsername()));
+            } catch (IOException e) {
+              reply.putInPayload("Message", "File non trovato");
+            }
+          }
+        }
         break;
       case SHOW_SECTION:
+        if (user == null) {
+          reply.putInPayload("Message", "Utente non connesso");
+        } else {
+          String filename = request.getPayload().get("filename");
+          String username;
+          if (!filename.contains("/")) {
+            username = user.getUsername();
+          } else {
+            username = filename.substring(0, filename.indexOf('/'));
+            filename = filename.substring(filename.indexOf('/') + 1);
+          }
+          int nSection = Integer.parseInt(request.getPayload().get("nSection"));
+          try {
+            reply.putInPayload("file", UsersManager.getFile(username, filename, nSection));
+          } catch (IOException e) {
+            reply.putInPayload("Message", "File non trovato");
+          }
+        }
+        break;
+      case END_EDIT:
+        String document = request.getPayload().get("document");
+        try {
+          server.writeFile(user.getUsername(), document);
+        } catch (IOException ignored) {/*Client didn't ask for a reply*/}
         break;
       case SHOW_DOCUMENT:
+        if (user == null) {
+          reply.putInPayload("Message", "Utente non connesso");
+        } else {
+          String filename = request.getPayload().get("filename");
+          String username = user.getUsername();
+          String owner;
+          if (!filename.contains("/")) {
+            owner = username;
+          } else {
+            owner = filename.substring(0, filename.indexOf('/'));
+            filename = filename.substring(filename.indexOf('/') + 1);
+          }
+          int totSections = UsersManager.getNSections(UsersManager.buildFilePath(owner, filename));
+          StringBuilder res = new StringBuilder();
+          try {
+            for (int i = 0; i < totSections; i++) {
+              res.append("Sezione ").append(i).append("\n\n")
+                  .append(UsersManager.getFile(username, filename, i)).append("\n\n");
+            }
+          } catch (IOException e) {
+            reply.putInPayload("Message", "File non trovato");
+            break;
+          }
+          reply.putInPayload("file", res.toString());
+        }
         break;
       case GET_MESSAGES:
         break;
@@ -124,7 +196,8 @@ public class ServerTask implements Runnable {
     }
 
     /*Se il tipo e` logout non devo rispondere*/
-    if (request.getRequestType() != RequestType.LOGOUT) {
+    if (request.getRequestType() != RequestType.LOGOUT
+        && request.getRequestType() != RequestType.END_EDIT) {
       /*Inizializzo il mapper per JSON*/
       ObjectMapper mapper = new ObjectMapper();
       try {

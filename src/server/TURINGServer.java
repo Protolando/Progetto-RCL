@@ -33,6 +33,7 @@ public class TURINGServer {
   private ThreadPoolExecutor threadPool;
   private Selector selector;
   private NetworkInterface networkInterface;
+  private FilesManager filesManager;
 
   TURINGServer() {
     /*Hash set che contiene gli utenti connessi*/
@@ -42,6 +43,21 @@ public class TURINGServer {
     /*Inizializzo il thread pool*/
     threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(poolSize);
     networkInterface = new NetworkInterface();
+    filesManager = new FilesManager();
+  }
+
+  public void addToEditing(ServerFile f) {
+    if (!filesManager.isBeingEdited(f.getFileName())) {
+      filesManager.addFile(f);
+    }
+  }
+
+  public void removeFromEditing(String username, String filename, int nSection) {
+    filesManager.remove(username, filename, nSection);
+  }
+
+  public boolean canBeEdited(String filename) {
+    return !filesManager.isBeingEdited(filename);
   }
 
   private void startRMIServer() throws RemoteException {
@@ -134,6 +150,10 @@ public class TURINGServer {
       /*Cancello la chiave*/
       loggedUsers.get(username).getKey().cancel();
     }
+    ServerFile userOpenFile = filesManager.getOpenEdits(username);
+    if (userOpenFile != null) {
+      removeFromEditing(userOpenFile.getOwner(), userOpenFile.getFileName(), userOpenFile.getNSection());
+    }
     /*Chiudo il canale se necessario*/
     loggedUsers.remove(username);
   }
@@ -219,5 +239,9 @@ public class TURINGServer {
     }
 
     /*Server fermato*/
+  }
+
+  public void writeFile(String username, String document) throws IOException {
+    UsersManager.writeToFile(filesManager.getOpenEdits(username), document);
   }
 }

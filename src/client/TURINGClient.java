@@ -1,5 +1,6 @@
 package client;
 
+import client.gui.ClientGUIDocument;
 import client.gui.ClientGUIHandler;
 import client.gui.ClientGUILogin;
 import client.gui.ClientGUIMenu;
@@ -21,9 +22,10 @@ public class TURINGClient {
   static final int ServerPort = 4562;
   private final ClientGUIHandler GUI;
   private NetworkHandler networkHandler;
-  private ClientGUILogin login;
   private ResourceBundle strings;
+  private ClientGUILogin login;
   private ClientGUIMenu menu;
+  private ClientGUIDocument document;
 
   public static void main(String[] args) {
     /*Inizializza GUI*/
@@ -78,12 +80,12 @@ public class TURINGClient {
       case LIST:
         break;
       case EDIT:
-        break;
-      case END_EDIT:
-        break;
       case SHOW_SECTION:
-        break;
+        JTextField sectionNum = new JTextField();
+        GUI.showPopup(new Object[]{"Sezione", sectionNum});
+        r.putInPayload("nSection", sectionNum.getText());
       case SHOW_DOCUMENT:
+        r.putInPayload("filename", menu.getSelected());
         break;
       case GET_MESSAGES:
         break;
@@ -127,6 +129,9 @@ public class TURINGClient {
         r.putInPayload("Filename", fileName.getText());
         r.putInPayload("nSections", nSections.getText());
         break;
+      case END_EDIT:
+        r.putInPayload("document", document.getDocument());
+        break;
     }
 
     new SwingWorker() {
@@ -162,12 +167,15 @@ public class TURINGClient {
         SwingUtilities.invokeLater(() -> menu.updateFileList(listaFiles));
         break;
       case EDIT:
-        break;
-      case END_EDIT:
+        document = new ClientGUIDocument(menu.getSelected(),
+            r.getPayload().get("file"), true, new ClientActionListenerDocument(this));
+        GUI.switchPanel(document);
         break;
       case SHOW_SECTION:
-        break;
       case SHOW_DOCUMENT:
+        document = new ClientGUIDocument(menu.getSelected(),
+            r.getPayload().get("file"), false, new ClientActionListenerDocument(this));
+        GUI.switchPanel(document);
         break;
       case GET_MESSAGES:
         break;

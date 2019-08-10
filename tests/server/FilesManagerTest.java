@@ -23,8 +23,8 @@ class FilesManagerTest {
     String result = null;
 
     try {
-      FilesManager.writeToFile(path, message);
-      result = FilesManager.readFromFile(path);
+      UsersManager.writeToFile(path, message);
+      result = UsersManager.readFromFile(path);
     } catch (IOException e) {
       e.printStackTrace();
       fail();
@@ -47,7 +47,7 @@ class FilesManagerTest {
     String[] userFiles = UsersManager.findUserFiles(username);
     assertEquals(0, userFiles.length);
     try {
-      FilesManager.newFile(UsersManager.buildUserPath(username), filename, nsections);
+      UsersManager.newFile(UsersManager.buildUserPath(username), filename, nsections);
     } catch (IOException e) {
       e.printStackTrace();
       fail();
@@ -56,7 +56,7 @@ class FilesManagerTest {
     assertEquals(1, userFiles.length);
     assertEquals(filename, userFiles[0]);
     assertEquals(nsections,
-        FilesManager.getNSections(UsersManager.buildUserPath(username) + "/" + filename));
+        UsersManager.getNSections(UsersManager.buildUserPath(username) + "/" + filename));
   }
 
   @AfterEach

@@ -3,7 +3,6 @@ package client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.SwingWorker;
 import share.Request;
 import share.RequestType;
 
@@ -29,7 +28,7 @@ public class ClientActionListenerMenu implements ActionListener {
         r = new Request(RequestType.CREATE);
         parent.sendMessage(r);
         break;
-      case "Mostra Tutto":
+      case "Mostra tutto":
         r = new Request(RequestType.SHOW_DOCUMENT);
         parent.sendMessageForResult(r);
         break;
@@ -41,7 +40,7 @@ public class ClientActionListenerMenu implements ActionListener {
         r = new Request(RequestType.EDIT);
         parent.sendMessageForResult(r);
         break;
-      case "Mostra Sezione":
+      case "Mostra sezione":
         r = new Request(RequestType.SHOW_SECTION);
         parent.sendMessageForResult(r);
         break;

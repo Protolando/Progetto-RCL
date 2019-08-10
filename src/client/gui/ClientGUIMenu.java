@@ -8,11 +8,9 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 
 public class ClientGUIMenu implements ClientGUIElement {
 
@@ -24,7 +22,6 @@ public class ClientGUIMenu implements ClientGUIElement {
   private JButton logout;
   private JButton newFile;
   private JList<String> filesList;
-  private JTextField section;
   private JPanel panel;
 
   public ClientGUIMenu(ArrayList<String> DocumentNames, ClientActionListenerMenu al) {
@@ -81,38 +78,6 @@ public class ClientGUIMenu implements ClientGUIElement {
     gridBag.setConstraints(showWhole, c);
     panel.add(showWhole);
 
-    JPanel sectionPanel = new JPanel();
-    GridBagLayout gridBagTmp = new GridBagLayout();
-    GridBagConstraints c1 = new GridBagConstraints();
-    sectionPanel.setLayout(gridBagTmp);
-
-    JLabel sectionLabel = new JLabel(stringsBundle.getString("Section"));
-    c1.gridx = 0;
-    c1.gridy = 0;
-    c1.weightx = 0.1;
-    c1.weighty = 0.1;
-    c1.anchor = GridBagConstraints.WEST;
-    gridBagTmp.setConstraints(sectionLabel, c1);
-    sectionPanel.add(sectionLabel);
-
-    section = new JTextField(5);
-    c1.gridx = 1;
-    c1.gridy = 0;
-    c1.weightx = 0.1;
-    c1.weighty = 0.1;
-    c1.anchor = GridBagConstraints.WEST;
-    gridBagTmp.setConstraints(section, c1);
-    sectionPanel.add(section);
-
-
-    c.gridx = 1;
-    c.gridy = 1;
-    c.weightx = 0.1;
-    c.weighty = 0.1;
-    c.anchor = GridBagConstraints.WEST;
-    gridBag.setConstraints(sectionPanel, c);
-    panel.add(sectionPanel);
-
     edit = new JButton(stringsBundle.getString("Edit"));
     c.gridx = 1;
     c.gridy = 2;
@@ -158,10 +123,6 @@ public class ClientGUIMenu implements ClientGUIElement {
 
   @Override
   public void setUINotices(String s) {}
-
-  public String getSection() {
-    return section.getText();
-  }
 
   public void updateFileList(ArrayList<String> newFileList) {
     DefaultListModel<String> model = new DefaultListModel<>();
