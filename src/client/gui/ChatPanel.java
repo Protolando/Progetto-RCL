@@ -3,6 +3,7 @@ package client.gui;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -62,5 +63,9 @@ public class ChatPanel {
 
   public String getNewMsg() {
     return newMsg.getText();
+  }
+
+  public void addSendActionListener(ActionListener al) {
+    button.addActionListener(al);
   }
 }

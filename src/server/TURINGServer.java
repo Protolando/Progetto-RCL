@@ -1,5 +1,7 @@
 package server;
 
+import static java.lang.Math.floor;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -34,6 +36,7 @@ public class TURINGServer {
   private Selector selector;
   private NetworkInterface networkInterface;
   private FilesManager filesManager;
+  private int multicastAddressCounter;
 
   TURINGServer() {
     /*Hash set che contiene gli utenti connessi*/
@@ -44,20 +47,39 @@ public class TURINGServer {
     threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(poolSize);
     networkInterface = new NetworkInterface();
     filesManager = new FilesManager();
+    multicastAddressCounter = 0;
   }
 
-  public void addToEditing(ServerFile f) {
-    if (!filesManager.isBeingEdited(f.getFileName())) {
-      filesManager.addFile(f);
+  public ServerFile addToEditing(String filename, String owner, int nSection, String editor) {
+    if (filesManager.getFile(filename, owner) == null) {
+      filesManager.addFile(new ServerFile(filename, owner, getMulticastAddress()));
+    }
+
+    ServerFile file = filesManager.getFile(filename, owner);
+    file.addOpenSection(new FileSection(nSection, editor, file));
+    return file;
+  }
+
+  private String getMulticastAddress() {
+    String address = "239.255." + (int) floor(multicastAddressCounter / 255) + "." +
+        String.valueOf((multicastAddressCounter % 255) + 1);
+    multicastAddressCounter++;
+    return address;
+  }
+
+  public void removeFromEditing(String filename, String owner, int nSection) {
+    filesManager.getFile(filename, owner).removeSection(nSection);
+    if (filesManager.getFile(filename, owner).nSectionOpen() == 0) {
+      filesManager.remove(filename, owner);
     }
   }
 
-  public void removeFromEditing(String username, String filename, int nSection) {
-    filesManager.remove(username, filename, nSection);
-  }
-
-  public boolean canBeEdited(String filename) {
-    return !filesManager.isBeingEdited(filename);
+  public boolean canBeEdited(String filename, String owner, int nSection) {
+    if (filesManager.getFile(filename, owner) == null) {
+      return true;
+    } else {
+      return !filesManager.getFile(filename, owner).isInUse(nSection);
+    }
   }
 
   private void startRMIServer() throws RemoteException {
@@ -150,9 +172,10 @@ public class TURINGServer {
       /*Cancello la chiave*/
       loggedUsers.get(username).getKey().cancel();
     }
-    ServerFile userOpenFile = filesManager.getOpenEdits(username);
-    if (userOpenFile != null) {
-      removeFromEditing(userOpenFile.getOwner(), userOpenFile.getFileName(), userOpenFile.getNSection());
+    FileSection userOpenSection = filesManager.getOpenEdits(username);
+    if (userOpenSection != null) {
+      removeFromEditing(userOpenSection.getFileName(), userOpenSection.getFile().getOwner(),
+          userOpenSection.getNSection());
     }
     /*Chiudo il canale se necessario*/
     loggedUsers.remove(username);
@@ -242,6 +265,7 @@ public class TURINGServer {
   }
 
   public void writeFile(String username, String document) throws IOException {
-    UsersManager.writeToFile(filesManager.getOpenEdits(username), document);
+    FileSection section = filesManager.getOpenEdits(username);
+    UsersManager.writeToFile(section, document);
   }
 }

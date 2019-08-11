@@ -20,12 +20,14 @@ public class TURINGClient {
 
   static final String ServerAddress = "127.0.0.1";
   static final int ServerPort = 4562;
+  static final int CHAT_PORT = 5969;
   private final ClientGUIHandler GUI;
   private NetworkHandler networkHandler;
   private ResourceBundle strings;
   private ClientGUILogin login;
   private ClientGUIMenu menu;
   private ClientGUIDocument document;
+  private ChatServer chatServer;
 
   public static void main(String[] args) {
     /*Inizializza GUI*/
@@ -129,8 +131,18 @@ public class TURINGClient {
         r.putInPayload("Filename", fileName.getText());
         r.putInPayload("nSections", nSections.getText());
         break;
+      case INVITE:
+        JTextField username = new JTextField();
+        GUI.showPopup(new Object[]{
+            "Nome Utente: ", username
+        });
+        r.putInPayload("username", username.getText());
+        r.putInPayload("filename", menu.getSelected());
+        break;
       case END_EDIT:
         r.putInPayload("document", document.getDocument());
+        chatServer.interrupt();
+        chatServer = null;
         break;
     }
 
@@ -138,6 +150,28 @@ public class TURINGClient {
       @Override
       protected Object doInBackground() throws IOException {
         networkHandler.sendMessage(r);
+        return null;
+      }
+    }.execute();
+  }
+
+  public void sendChatMessage() {
+    new SwingWorker() {
+      @Override
+      protected Object doInBackground() {
+
+        boolean sent = false;
+        int timeout = 0;
+
+        while (!sent && timeout < 10) {
+          try {
+            chatServer.sendChatMessage(document.getNewMessageContent());
+            sent = true;
+          } catch (IOException e) {
+            /*Lo rifaccio finche` fino a 10 volte se fallisce*/
+            timeout++;
+          }
+        }
         return null;
       }
     }.execute();
@@ -156,8 +190,6 @@ public class TURINGClient {
           GUI.setUINotices(r.getPayload().get("Message"));
         }
         break;
-      case INVITE:
-        break;
       case LIST:
         int listElems = Integer.parseInt(r.getPayload().get("nfiles"));
         ArrayList<String> listaFiles = new ArrayList<>();
@@ -170,6 +202,8 @@ public class TURINGClient {
         document = new ClientGUIDocument(menu.getSelected(),
             r.getPayload().get("file"), true, new ClientActionListenerDocument(this));
         GUI.switchPanel(document);
+        chatServer = new ChatServer(r.getPayload().get("MulticastAddress"), this);
+        chatServer.start();
         break;
       case SHOW_SECTION:
       case SHOW_DOCUMENT:
@@ -178,8 +212,7 @@ public class TURINGClient {
         GUI.switchPanel(document);
         break;
       case GET_MESSAGES:
-        break;
-      case SEND_MESSAGE:
+        SwingUtilities.invokeLater(() -> document.updateChat(r.getPayload().get("Message")));
         break;
       case SERVER_RESPONSE:
         break;

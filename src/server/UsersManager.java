@@ -28,7 +28,7 @@ public class UsersManager {
       throw new UsernameAlreadyUsedException();
     }
 
-    User user = new User(username, password, null);
+    User user = new User(username, password);
     ObjectMapper mapper = new ObjectMapper();
     writeToFile(buildUserFilePath(username), mapper.writeValueAsString(user));
   }
@@ -100,8 +100,9 @@ public class UsersManager {
     return readFromFile(buildSectionPath(username, filename, nSection));
   }
 
-  static void writeToFile(ServerFile file, String data) throws IOException {
-    writeToFile(buildSectionPath(file.getOwner(), file.getFileName(), file.getNSection()), data);
+  static void writeToFile(FileSection section, String data) throws IOException {
+    writeToFile(buildSectionPath(section.getFile().getOwner(), section.getFile().getFilename(),
+        section.getNSection()), data);
   }
 
   static void writeToFile(String filepath, String data) throws IOException {
@@ -207,5 +208,21 @@ public class UsersManager {
 
   public static String buildFilePath(String owner, String filename) {
     return buildUserPath(owner) + "/" + filename + ".TURINGFile/";
+  }
+
+  public static void addInvite(String owner, String filename, String username)
+      throws UserNotFoundException, IOException {
+    User userfile = getUserData(username);
+    userfile.addInvite(owner + "/" + filename);
+    writeUserFile(username, userfile);
+  }
+
+  private static void writeUserFile(String username, User userfile) throws IOException {
+    String userpath = buildUserFilePath(username);
+    Path path = Paths.get(userpath);
+    path.toFile().delete();
+
+    ObjectMapper mapper = new ObjectMapper();
+    writeToFile(userpath, mapper.writeValueAsString(userfile));
   }
 }

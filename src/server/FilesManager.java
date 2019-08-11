@@ -1,38 +1,60 @@
 package server;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 class FilesManager {
 
-  private LinkedList<ServerFile> files;
+  private HashMap<String, LinkedList<ServerFile>> files;
 
   public FilesManager() {
-    this.files = new LinkedList<>();
+    this.files = new HashMap<>();
   }
 
   public void addFile(ServerFile file) {
-    files.add(file);
+    files.computeIfAbsent(file.getFilename(), k -> new LinkedList<>());
+    for (ServerFile f : files.get(file.getFilename())) {
+      if (file.getOwner().equals(f.getOwner())) {
+        return;
+      }
+    }
+
+    files.get(file.getFilename()).add(file);
   }
 
-  public ServerFile getOpenEdits(String username) {
-    for (ServerFile f : files) {
-      if (f.getOpenBy().equals(username)) {
-        return f;
+  public FileSection getOpenEdits(String username) {
+    for (LinkedList<ServerFile> l : files.values()) {
+      for (ServerFile f : l) {
+        FileSection[] s = f.getOpenSections();
+        for (FileSection section : s) {
+          if (section.getOpenBy().equals(username)) {
+            return section;
+          }
+        }
       }
     }
     return null;
   }
 
-  public boolean isBeingEdited(String filename) {
-    for (ServerFile f : files) {
-      if (f.equals(filename)) {
-        return true;
+  public void remove(String filename, String ownername) {
+    for (ServerFile f : files.get(filename)) {
+      if (f.getOwner().equals(ownername)) {
+        files.get(filename).remove(f);
+        return;
       }
     }
-    return false;
   }
 
-  public void remove(String owner, String filename, int section) {
-    files.remove(new ServerFile(owner, filename, section, null));
+  public ServerFile getFile(String filename, String ownername) {
+    if (files.get(filename) == null) {
+      return null;
+    }
+
+    for (ServerFile f : files.get(filename)) {
+      if (f.getOwner().equals(ownername)) {
+        return f;
+      }
+    }
+    return null;
   }
 }

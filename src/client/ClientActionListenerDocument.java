@@ -20,14 +20,17 @@ public class ClientActionListenerDocument implements ActionListener {
       case "Salva":
         r = new Request(RequestType.END_EDIT);
         break;
-        /*todo*/
-      case "Esci" :
+      /*todo*/
+      case "Esci":
         r = new Request(RequestType.END_EDIT);
         break;
       case "Invia":
-        r = new Request(RequestType.END_EDIT);
+        server.sendChatMessage();
         break;
     }
-    server.sendMessage(r);
+
+    if (!actionEvent.getActionCommand().equals("Invia")) {
+      server.sendMessage(r);
+    }
   }
 }

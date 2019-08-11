@@ -89,6 +89,17 @@ public class ServerTask implements Runnable {
         }
         break;
       case INVITE:
+        if (user.getUsername() == null) {
+          reply.putInPayload("Message", "Utente non connesso");
+        } else {
+          String filename = request.getPayload().get("filename");
+          String username = request.getPayload().get("username");
+          try {
+            UsersManager.addInvite(user.getUsername(), filename, username);
+          } catch (UserNotFoundException | IOException e) {
+            reply.putInPayload("Message", "Utente non trovato");
+          }
+        }
         break;
       case LIST:
         if (user == null) {
@@ -111,22 +122,25 @@ public class ServerTask implements Runnable {
           reply.putInPayload("Message", "Utente non connesso");
         } else {
           String filename = request.getPayload().get("filename");
-          if (!server.canBeEdited(filename)) {
+          int nSection = Integer.parseInt(request.getPayload().get("nSection"));
+
+          String username = user.getUsername();
+          String ownername;
+          if (!filename.contains("/")) {
+            ownername = username;
+          } else {
+            ownername = filename.substring(0, filename.indexOf('/'));
+            filename = filename.substring(filename.indexOf('/') + 1);
+          }
+
+          if (!server.canBeEdited(filename, ownername, nSection)) {
             reply.putInPayload("Message", "File gia` in uso da un altro utente");
           } else {
-            String username = user.getUsername();
-            String ownername;
-            if (!filename.contains("/")) {
-              ownername = username;
-            } else {
-              ownername = filename.substring(0, filename.indexOf('/'));
-              filename = filename.substring(filename.indexOf('/') + 1);
-            }
-            int nSection = Integer.parseInt(request.getPayload().get("nSection"));
             try {
+              ServerFile file = server
+                  .addToEditing(filename, ownername, nSection, user.getUsername());
               reply.putInPayload("file", UsersManager.getFile(ownername, filename, nSection));
-              server
-                  .addToEditing(new ServerFile(ownername, filename, nSection, user.getUsername()));
+              reply.putInPayload("MulticastAddress", String.valueOf(file.getMulticastAddress()));
             } catch (IOException e) {
               reply.putInPayload("Message", "File non trovato");
             }
@@ -197,6 +211,7 @@ public class ServerTask implements Runnable {
 
     /*Se il tipo e` logout non devo rispondere*/
     if (request.getRequestType() != RequestType.LOGOUT
+        && request.getRequestType() != RequestType.CREATE
         && request.getRequestType() != RequestType.END_EDIT) {
       /*Inizializzo il mapper per JSON*/
       ObjectMapper mapper = new ObjectMapper();

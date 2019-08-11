@@ -83,6 +83,7 @@ public class ClientGUIDocument implements ClientGUIElement {
 
     commit.addActionListener(al);
     quit.addActionListener(al);
+    chat.addSendActionListener(al);
   }
 
   public String getDocument() {
@@ -93,10 +94,8 @@ public class ClientGUIDocument implements ClientGUIElement {
     return chat.getNewMsg();
   }
 
-  public void updateChat(ArrayList<String> messages) {
-    for (String s : messages) {
-      chat.addMessage(s);
-    }
+  public void updateChat(String message) {
+    chat.addMessage(message);
   }
 
   @Override

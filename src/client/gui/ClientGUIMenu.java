@@ -15,6 +15,7 @@ import javax.swing.JScrollPane;
 public class ClientGUIMenu implements ClientGUIElement {
 
   private final ResourceBundle stringsBundle;
+  private JButton invite;
   private JButton edit;
   private JButton show;
   private JButton showWhole;
@@ -78,6 +79,15 @@ public class ClientGUIMenu implements ClientGUIElement {
     gridBag.setConstraints(showWhole, c);
     panel.add(showWhole);
 
+    invite = new JButton(stringsBundle.getString("Invite"));
+    c.gridx = 1;
+    c.gridy = 1;
+    c.weightx = 0.1;
+    c.weighty = 0.1;
+    c.anchor = GridBagConstraints.WEST;
+    gridBag.setConstraints(invite, c);
+    panel.add(invite);
+
     edit = new JButton(stringsBundle.getString("Edit"));
     c.gridx = 1;
     c.gridy = 2;
@@ -111,6 +121,7 @@ public class ClientGUIMenu implements ClientGUIElement {
     update.addActionListener(al);
     logout.addActionListener(al);
     newFile.addActionListener(al);
+    invite.addActionListener(al);
   }
 
   public JPanel getPanel() {

@@ -20,6 +20,7 @@ public class ClientStrings extends ListResourceBundle {
         {"NewFile", "Nuovo File"},
         {"ShowWhole", "Mostra tutto"},
         {"Update", "Aggiorna Lista"},
+        {"Invite", "Invita utente"},
         {"Section", "Sezione"},
         {"Logout", "Disconnetti"},
         {"UsernameUsed", "Username gia` utilizzato"},

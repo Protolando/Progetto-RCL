@@ -36,6 +36,10 @@ public class ClientActionListenerMenu implements ActionListener {
         r = new Request(RequestType.LOGOUT);
         parent.sendMessage(r);
         break;
+      case "Invita utente":
+        r = new Request(RequestType.INVITE);
+        parent.sendMessage(r);
+        break;
       case "Modifica Sezione":
         r = new Request(RequestType.EDIT);
         parent.sendMessageForResult(r);
