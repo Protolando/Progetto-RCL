@@ -8,6 +8,7 @@ public enum RequestType {
   LIST,
   EDIT,
   END_EDIT,
+  CANCEL_EDIT,
   SHOW_SECTION,
   SHOW_DOCUMENT,
   GET_MESSAGES,

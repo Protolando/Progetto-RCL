@@ -22,9 +22,10 @@ public class ChatServer extends Thread {
   }
 
   public void sendChatMessage(String message) throws IOException {
-    byte[] buffer = message.getBytes(StandardCharsets.UTF_8);
+    byte[] buffer = (message + "\0").getBytes(StandardCharsets.UTF_8);
     InetAddress address = InetAddress.getByName(multicastAddress);
-    DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, TURINGClient.CHAT_PORT);
+    DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address,
+        TURINGClient.CHAT_PORT);
 
     DatagramSocket socket = new DatagramSocket();
     socket.send(packet);
@@ -43,12 +44,11 @@ public class ChatServer extends Thread {
       while (!Thread.currentThread().isInterrupted()) {
         ms.receive(dp);
         Request r = new Request(RequestType.GET_MESSAGES);
-        r.putInPayload("message",
-            new String(dp.getData(), 0, dp.getLength(), StandardCharsets.UTF_8));
+        String msg = new String(dp.getData(), 0, dp.getLength(), StandardCharsets.UTF_8);
+        r.putInPayload("Message", msg.substring(0, msg.indexOf("\0")) + "\n");
         turingClient.update(r);
       }
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (IOException ignored) {
     }
   }
 

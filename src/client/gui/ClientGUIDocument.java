@@ -4,7 +4,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -13,9 +12,6 @@ import javax.swing.JTextArea;
 
 public class ClientGUIDocument implements ClientGUIElement {
 
-  private final ResourceBundle stringsBundle;
-  private JButton commit;
-  private JButton quit;
   private JTextArea document;
   private ChatPanel chat;
   private String filename;
@@ -23,7 +19,7 @@ public class ClientGUIDocument implements ClientGUIElement {
 
   public ClientGUIDocument(String filename, String fileText, boolean editable,
       ActionListener al) {
-    stringsBundle = ResourceBundle.getBundle("client.resources.ClientStrings");
+    ResourceBundle stringsBundle = ResourceBundle.getBundle("client.resources.ClientStrings");
 
     this.filename = filename;
     panel = new JPanel();
@@ -51,7 +47,7 @@ public class ClientGUIDocument implements ClientGUIElement {
     c.gridwidth = 1;
     c.fill = GridBagConstraints.NONE;
 
-    commit = new JButton(stringsBundle.getString("CommitEdits"));
+    JButton commit = new JButton(stringsBundle.getString("CommitEdits"));
     c.gridx = 0;
     c.gridy = 1;
     c.weightx = 0.2;
@@ -60,7 +56,7 @@ public class ClientGUIDocument implements ClientGUIElement {
     gridBag.setConstraints(commit, c);
     panel.add(commit);
 
-    quit = new JButton(stringsBundle.getString("Quit"));
+    JButton quit = new JButton(stringsBundle.getString("Quit"));
     c.gridx = 1;
     c.gridy = 1;
     c.weightx = 0.2;
@@ -70,20 +66,22 @@ public class ClientGUIDocument implements ClientGUIElement {
     panel.add(quit);
     c.anchor = GridBagConstraints.NONE;
 
-    chat = new ChatPanel();
-    c.fill = GridBagConstraints.BOTH;
-    c.gridx = 2;
-    c.gridy = 0;
-    c.weightx = 0.3;
-    c.weighty = 1;
-    c.anchor = GridBagConstraints.EAST;
-    c.gridheight = GridBagConstraints.REMAINDER;
-    gridBag.setConstraints(chat.getPanel(), c);
-    panel.add(chat.getPanel());
+    if (editable) {
+      chat = new ChatPanel();
+      c.fill = GridBagConstraints.BOTH;
+      c.gridx = 2;
+      c.gridy = 0;
+      c.weightx = 0.3;
+      c.weighty = 1;
+      c.anchor = GridBagConstraints.EAST;
+      c.gridheight = GridBagConstraints.REMAINDER;
+      gridBag.setConstraints(chat.getPanel(), c);
+      panel.add(chat.getPanel());
+      chat.addSendActionListener(al);
+    }
 
     commit.addActionListener(al);
     quit.addActionListener(al);
-    chat.addSendActionListener(al);
   }
 
   public String getDocument() {
@@ -91,11 +89,17 @@ public class ClientGUIDocument implements ClientGUIElement {
   }
 
   public String getNewMessageContent() {
-    return chat.getNewMsg();
+    if (chat != null) {
+      return chat.getNewMsg();
+    } else {
+      return null;
+    }
   }
 
   public void updateChat(String message) {
-    chat.addMessage(message);
+    if (chat != null) {
+      chat.addMessage(message);
+    }
   }
 
   @Override

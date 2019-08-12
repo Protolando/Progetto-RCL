@@ -122,6 +122,11 @@ public class ServerTask implements Runnable {
           reply.putInPayload("Message", "Utente non connesso");
         } else {
           String filename = request.getPayload().get("filename");
+          if (request.getPayload().get("nSection").equals("")) {
+            reply.putInPayload("Message", "Numero di sessione non valido");
+            break;
+          }
+
           int nSection = Integer.parseInt(request.getPayload().get("nSection"));
 
           String username = user.getUsername();
@@ -151,6 +156,10 @@ public class ServerTask implements Runnable {
         if (user == null) {
           reply.putInPayload("Message", "Utente non connesso");
         } else {
+          if (request.getPayload().get("nSection").equals("")) {
+            reply.putInPayload("Message", "Numero di sessione non valido");
+            break;
+          }
           String filename = request.getPayload().get("filename");
           String username;
           if (!filename.contains("/")) {
@@ -172,6 +181,8 @@ public class ServerTask implements Runnable {
         try {
           server.writeFile(user.getUsername(), document);
         } catch (IOException ignored) {/*Client didn't ask for a reply*/}
+      case CANCEL_EDIT:
+        server.removeFromEditing(user.getUsername());
         break;
       case SHOW_DOCUMENT:
         if (user == null) {
@@ -199,10 +210,6 @@ public class ServerTask implements Runnable {
           }
           reply.putInPayload("file", res.toString());
         }
-        break;
-      case GET_MESSAGES:
-        break;
-      case SEND_MESSAGE:
         break;
       default:
         reply.setRequestType(RequestType.SERVER_RESPONSE);

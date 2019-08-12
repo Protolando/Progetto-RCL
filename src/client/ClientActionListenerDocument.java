@@ -20,9 +20,8 @@ public class ClientActionListenerDocument implements ActionListener {
       case "Salva":
         r = new Request(RequestType.END_EDIT);
         break;
-      /*todo*/
       case "Esci":
-        r = new Request(RequestType.END_EDIT);
+        r = new Request(RequestType.CANCEL_EDIT);
         break;
       case "Invia":
         server.sendChatMessage();

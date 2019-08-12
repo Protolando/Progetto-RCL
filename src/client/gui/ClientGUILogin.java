@@ -1,13 +1,16 @@
 package client.gui;
 
 import client.ClientActionListenerLogin;
+import client.TURINGClient;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -17,7 +20,7 @@ public class ClientGUILogin implements ClientGUIElement {
   private ResourceBundle stringsBundle;
   private JLabel UINotices;
   private JTextField passwordField;
-  private JTextField usernameField;
+  private JFormattedTextField usernameField;
   private JPanel panel;
 
   public ClientGUILogin(ClientActionListenerLogin al) {
@@ -45,7 +48,7 @@ public class ClientGUILogin implements ClientGUIElement {
     c.gridy = 0;
     gridBag.setConstraints(usernameLabel, c);
     panel.add(usernameLabel);
-    usernameField = new JTextField("", 10);
+    usernameField = TURINGClient.getStringTextField();
     c.gridx = 1;
     c.gridy = 0;
     gridBag.setConstraints(usernameField, c);
@@ -55,7 +58,7 @@ public class ClientGUILogin implements ClientGUIElement {
     c.gridy = 1;
     gridBag.setConstraints(passwordLabel, c);
     panel.add(passwordLabel);
-    passwordField = new JTextField("", 10);
+    passwordField = new JPasswordField("", 10);
     c.gridx = 1;
     c.gridy = 1;
     gridBag.setConstraints(passwordField, c);

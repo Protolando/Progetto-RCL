@@ -67,8 +67,12 @@ public class TURINGServer {
     return address;
   }
 
-  public void removeFromEditing(String filename, String owner, int nSection) {
-    filesManager.getFile(filename, owner).removeSection(nSection);
+  public void removeFromEditing(String username) {
+    FileSection section = filesManager.getOpenEdits(username);
+    String filename = section.getFileName();
+    String owner = section.getFile().getOwner();
+    filesManager.getFile(filename, owner).removeSection(section.getNSection());
+
     if (filesManager.getFile(filename, owner).nSectionOpen() == 0) {
       filesManager.remove(filename, owner);
     }
@@ -174,8 +178,7 @@ public class TURINGServer {
     }
     FileSection userOpenSection = filesManager.getOpenEdits(username);
     if (userOpenSection != null) {
-      removeFromEditing(userOpenSection.getFileName(), userOpenSection.getFile().getOwner(),
-          userOpenSection.getNSection());
+      removeFromEditing(userOpenSection.getOpenBy());
     }
     /*Chiudo il canale se necessario*/
     loggedUsers.remove(username);

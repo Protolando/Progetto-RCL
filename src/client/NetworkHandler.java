@@ -2,7 +2,6 @@ package client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
@@ -19,7 +18,6 @@ public class NetworkHandler {
 
   private SocketChannel connection;
   private NetworkInterface networkInterface;
-  private DatagramSocket datagramSocket;
 
   public NetworkHandler() throws IOException {
     SocketAddress address = new InetSocketAddress(TURINGClient.ServerAddress,
@@ -55,5 +53,9 @@ public class NetworkHandler {
     ObjectMapper mapper = new ObjectMapper();
     String msg = mapper.writeValueAsString(r);
     networkInterface.write(connection, msg);
+  }
+
+  public void disconnect() throws IOException {
+    connection.close();
   }
 }
