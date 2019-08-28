@@ -115,9 +115,15 @@ public class UsersManager {
     }
 
     /*Aggiunge un invito ad un utente*/
+    String filePath = owner + "/" + filename;
     User userfile = getUserData(username);
 
-    userfile.addInvite(owner + "/" + filename);
+    for(String s : userfile.getInvites()){
+      if(s.equals(filePath))
+        throw new FileAlreadyExistsException(null);
+    }
+
+    userfile.addInvite(filePath);
     writeUserFile(username, userfile);
   }
 

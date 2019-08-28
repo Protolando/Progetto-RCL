@@ -2,10 +2,10 @@ package server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.file.FileAlreadyExistsException;
+import java.util.ArrayList;
 import share.Request;
 import share.RequestType;
 import share.UserNotFoundException;
@@ -112,7 +112,14 @@ public class ServerTask implements Runnable {
           try {
             /*Provo ad invitare l'utente*/
             UsersManager.addInvite(user.getUsername(), filename, username);
-            /*E se ci riesco provo a notificarlo forse idk TODO*/
+            SelectionKey key = server.getKeyFromUsername(username);
+            if (key != null) {
+              Request invited = new Request(RequestType.INVITE_NOTIFICATION);
+              invited.putInPayload("filename", user.getUsername() + "/" + filename);
+              setReady(key, invited);
+            }
+          } catch (FileAlreadyExistsException e) {
+            reply.putInPayload("Message", "Utente già invitato");
           } catch (IOException | UserNotFoundException e) {
             reply.putInPayload("Message", "Utente non trovato");
           }
@@ -265,21 +272,32 @@ public class ServerTask implements Runnable {
     /*Mando la risposta*/
     if (request.getRequestType()
         != RequestType.LOGOUT) { //Se la richiesta era logout, non devo rispondere
-      /*Inizializzo il mapper per JSON*/
-      ObjectMapper mapper = new ObjectMapper();
-      try {
-        /*Converto la risposta in JSON string e la attacco alla chiave*/
-        String strReply = mapper.writeValueAsString(reply);
-        synchronized (key) { /*TODO DEVO?*/
-          key.attach(strReply);
-          /*Aggiungo la chiave a quelle scrivibili*/
-          server.addInterestToKey(key, SelectionKey.OP_WRITE);
-        }
-      } catch (
-          JsonProcessingException e) {
-        e.printStackTrace();
-      }
-
+      setReady(key, reply);
     }
+  }
+
+  private void setReady(SelectionKey key, Request r) {
+    /*Prepara la chiave per spedire un messaggio*/
+
+    /*Inizializzo il mapper per JSON*/
+    ObjectMapper mapper = new ObjectMapper();
+    try {
+      /*Converto la risposta in JSON string e la attacco alla chiave*/
+      String strReply = mapper.writeValueAsString(r);
+      synchronized (key) {
+        ArrayList<String> attachment = (ArrayList<String>) key.attachment();
+        if (attachment == null) {
+          attachment = new ArrayList<>();
+        }
+        attachment.add(strReply);
+        key.attach(attachment);
+        /*Aggiungo la chiave a quelle scrivibili*/
+      }
+      server.addInterestToKey(key, SelectionKey.OP_WRITE);
+    } catch (
+        JsonProcessingException e) {
+      e.printStackTrace();
+    }
+
   }
 }

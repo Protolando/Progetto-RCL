@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.Arrays;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -219,6 +220,18 @@ class UsersManagerTest {
     assertEquals(1, u.getInvites().length);
     String file = owner + "/" + filename;
     assertEquals(file, u.getInvites()[0]);
+
+    /*Controllo che non venga accettato due volte lo stesso file*/
+    try {
+      UsersManager.addInvite(owner, filename, username);
+      fail();
+    } catch (FileAlreadyExistsException ignored) {
+    } catch (IOException |
+        UserNotFoundException e) {
+      fail();
+    }
+
+    assertEquals(1, u.getInvites().length);
   }
 
   @Test

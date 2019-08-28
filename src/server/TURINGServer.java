@@ -1,6 +1,7 @@
 package server;
 
 import static java.lang.Math.floor;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,6 +13,7 @@ import java.nio.channels.SocketChannel;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -179,9 +181,13 @@ public class TURINGServer {
     /*Scrivo sul canale*/
     SocketChannel client = (SocketChannel) key.channel();
     /*passo a networkInterface il contenuto dell'attachment di key*/
-    String message = (String) key.attachment();
-    networkInterface.write(client, message);
+    ArrayList<String> messages = (ArrayList<String>) key.attachment();
 
+    for (String message : messages) {
+      networkInterface.write(client, message);
+    }
+
+    key.attach(null);
     /*Smetto di seguire il canale per la scrittura*/
     removeInterestFromKey(key, SelectionKey.OP_WRITE);
   }
@@ -271,6 +277,16 @@ public class TURINGServer {
         return loggedUsers.get(username);
       }
     }
+    return null;
+  }
+
+  SelectionKey getKeyFromUsername(String username) {
+    for (LoggedUser u : loggedUsers.values()) {
+      if (u.getUsername().equals(username)) {
+        return u.getKey();
+      }
+    }
+
     return null;
   }
 

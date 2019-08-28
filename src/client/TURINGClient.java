@@ -123,6 +123,8 @@ public class TURINGClient {
   void sendMessage(Request r) {/*Invio un messaggio e non mi aspetto nessuna risposta*/
     boolean error = false;
 
+    System.out.println("Inviata richiesta " + r.getRequestType());
+
     switch (r.getRequestType()) {
       case LOGOUT: //Fai il logout dal server
         break;
@@ -259,13 +261,6 @@ public class TURINGClient {
           return null;
         }
       }.execute();
-
-      if (r.getRequestType() == RequestType.END_EDIT
-          || r.getRequestType() == RequestType.CANCEL_EDIT) {
-        /*Se la richiesta era di modifica, una volta uscito richiedo di
-         aggiornare la lista dei documenti nel menu*/
-        sendMessage(new Request(RequestType.LIST));
-      }
     }
   }
 
@@ -309,6 +304,9 @@ public class TURINGClient {
   }
 
   void update(Request r) {
+    System.out.println("Ricevuta richiesta " + r.getRequestType());
+    System.out.flush();
+
     /*Aggiorna l'interfaccia grafica in seguito ad una risposta dal server*/
     switch (r.getRequestType()) {
       case LOGIN:
@@ -334,8 +332,10 @@ public class TURINGClient {
         for (int i = 0; i < listElems; i++) {
           listaFiles.add(r.getPayload().get(String.valueOf(i)));
         }
-        /*Faccio aggiornare l'interfaccia al thread dell'UI*/
-        SwingUtilities.invokeLater(() -> menu.updateFileList(listaFiles));
+        if (menu != null) {
+          /*Faccio aggiornare l'interfaccia al thread dell'UI*/
+          SwingUtilities.invokeLater(() -> menu.updateFileList(listaFiles));
+        }
         break;
       case EDIT:
         if (r.getPayload().get("Message") != null) {
@@ -369,7 +369,14 @@ public class TURINGClient {
         break;
       case GET_MESSAGES:
         /*è arrivato un messaggio di chat, aggiorno l'UI nel thread dell'UI*/
-        SwingUtilities.invokeLater(() -> document.updateChat(r.getPayload().get("Message")));
+        if (document != null) {
+          SwingUtilities.invokeLater(() -> document.updateChat(r.getPayload().get("Message")));
+        }
+        break;
+      case INVITE_NOTIFICATION:
+        GUI.showPopup(new Object[]{
+                "Sei stato invitato a modificare il file " + r.getPayload().get("filename")},
+            "Attenzione", new Object[]{"OK"});
         break;
       case CREATE:
         /*Chiedo un aggiornamento della lista dei file*/
@@ -377,6 +384,12 @@ public class TURINGClient {
       case INVITE:
       case END_EDIT:
       case CANCEL_EDIT:
+        if (r.getRequestType() == RequestType.END_EDIT
+            || r.getRequestType() == RequestType.CANCEL_EDIT) {
+        /*Se la richiesta era di modifica, una volta uscito richiedo di
+         aggiornare la lista dei documenti nel menu*/
+          sendMessage(new Request(RequestType.LIST));
+        }
       case SERVER_RESPONSE:
         /*Se c'è stato un errore lo mostro*/
         if (r.getPayload().get("Message") != null) {
