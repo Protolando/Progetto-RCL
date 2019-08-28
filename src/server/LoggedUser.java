@@ -3,20 +3,23 @@ package server;
 import java.nio.channels.SelectionKey;
 
 public class LoggedUser {
+  /*Classe che rappresenta un utente connesso al server*/
 
-  private String username;
-  private SelectionKey key;
+  /*Nome dell'utente*/
+  private final String username;
+  /*Key del selector*/
+  private final SelectionKey key;
+
+  LoggedUser(String username, SelectionKey socket) {
+    this.username = username;
+    this.key = socket;
+  }
 
   public String getUsername() {
     return username;
   }
 
-  public SelectionKey getKey() {
+  SelectionKey getKey() {
     return key;
-  }
-
-  public LoggedUser(String username, SelectionKey socket) {
-    this.username = username;
-    this.key = socket;
   }
 }

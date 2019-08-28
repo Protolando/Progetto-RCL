@@ -2,7 +2,7 @@ package server;
 
 import java.io.File;
 
-public class CleanDirectory {
+class CleanDirectory {
 
   static void deleteDirectory(File directoryToBeDeleted) {
     File[] allContents = directoryToBeDeleted.listFiles();

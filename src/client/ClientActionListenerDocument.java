@@ -6,10 +6,11 @@ import share.Request;
 import share.RequestType;
 
 public class ClientActionListenerDocument implements ActionListener {
+  /*Listener per ClientGUIDocument*/
 
-  private TURINGClient server;
+  private final TURINGClient server;
 
-  public ClientActionListenerDocument(TURINGClient server) {
+  ClientActionListenerDocument(TURINGClient server) {
     this.server = server;
   }
 
@@ -28,8 +29,8 @@ public class ClientActionListenerDocument implements ActionListener {
         break;
     }
 
-    if (!actionEvent.getActionCommand().equals("Invia")) {
-      server.sendMessage(r);
+    if (r != null) {
+        server.sendMessage(r);
     }
   }
 }

@@ -9,16 +9,16 @@ import java.nio.charset.StandardCharsets;
 
 public class NetworkInterface {
 
-  private ByteBuffer buffer;
-  private Charset charset;
+  private final Charset charset;
   private static final int BUFFER_SIZE = 1024;
 
   public NetworkInterface() {
-    this.buffer = ByteBuffer.allocate(BUFFER_SIZE);
     charset = StandardCharsets.UTF_8;
   }
 
   public void write(SocketChannel connection, String msg) throws IOException {
+    ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+
     buffer.clear();
     buffer.put(charset.encode(String.valueOf(msg.length())));
     /*E lo scrivo*/
@@ -39,6 +39,8 @@ public class NetworkInterface {
   }
 
   public String read(SocketChannel connection) throws IOException {
+
+    ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
     /*Leggo il messaggio*/
     buffer.clear();
 

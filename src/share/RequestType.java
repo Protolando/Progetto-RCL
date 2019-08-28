@@ -12,6 +12,5 @@ public enum RequestType {
   SHOW_SECTION,
   SHOW_DOCUMENT,
   GET_MESSAGES,
-  SEND_MESSAGE,
   SERVER_RESPONSE
 }

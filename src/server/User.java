@@ -6,12 +6,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class User {
+  /*Classe che rappresenta un utente*/
 
   private final String username;
   private final String password;
   private final ArrayList<String> invites;
 
-  public User(String username, String password) {
+  User(String username, String password) {
     this.username = username;
     this.password = password;
     invites = new ArrayList<>();
@@ -33,12 +34,12 @@ public class User {
     return password;
   }
 
-  public void addInvite(String filePath) {
+  void addInvite(String filePath) {
     invites.add(filePath);
   }
 
   @JsonProperty("invites")
-  public String[] getInvites() {
+  String[] getInvites() {
     return invites.toArray(new String[0]);
   }
 }

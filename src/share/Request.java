@@ -5,7 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashMap;
 
 public class Request {
+  /*Classe che rappresenta un messaggio scambiato tra client e server*/
+
+  /*Tipo della richiesta*/
   private RequestType requestType;
+  /*Contenuto*/
   private HashMap<String, String> payload;
 
   @JsonCreator

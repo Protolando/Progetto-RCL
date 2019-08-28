@@ -10,39 +10,50 @@ import share.Request;
 import share.RequestType;
 
 public class ChatServer extends Thread {
+  /*Classe che gestisce l'invio e la ricezione di messagi di chat con UDP Multicast*/
 
   private static final int BUFFER_SIZE = 1000 * 1000;
-  private String multicastAddress;
-  private TURINGClient turingClient;
-  private MulticastSocket ms;
+  private final String multicastAddress; //Indirizzo del gruppo multicast
+  private final TURINGClient turingClient;
+  private MulticastSocket ms; //Socket
 
-  public ChatServer(String multicastAddress, TURINGClient client) {
+  ChatServer(String multicastAddress, TURINGClient client) {
     this.multicastAddress = multicastAddress;
     this.turingClient = client;
   }
 
-  public void sendChatMessage(String message) throws IOException {
+  void sendChatMessage(String message) throws IOException {
+    /*Invia un messaggio di chat all'indirizzo multicast*/
+
+    /*Preparo il buffer*/
     byte[] buffer = (message + "\0").getBytes(StandardCharsets.UTF_8);
+    /*Preparo il pacchetto*/
     InetAddress address = InetAddress.getByName(multicastAddress);
     DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address,
         TURINGClient.CHAT_PORT);
 
+    /*Preparo il socket*/
     DatagramSocket socket = new DatagramSocket();
+    /*Invio il pacchetto*/
     socket.send(packet);
   }
 
   @Override
   public void run() {
     try {
+      /*creo il socket*/
       ms = new MulticastSocket(TURINGClient.CHAT_PORT);
       InetAddress ia = InetAddress.getByName(multicastAddress);
-      ms.joinGroup(ia);
+      ms.joinGroup(ia); /*Mi unisco al gruppo di multicast*/
 
+      /*Creo un packet UDP*/
       byte[] buffer = new byte[BUFFER_SIZE];
       DatagramPacket dp = new DatagramPacket(buffer, BUFFER_SIZE);
 
       while (!Thread.currentThread().isInterrupted()) {
+        /*Finchè il thread non è stato chiuso sono in attesa di messaggi*/
         ms.receive(dp);
+        /*Istanzio Request e la mando al client per aggiornare l'UI*/
         Request r = new Request(RequestType.GET_MESSAGES);
         String msg = new String(dp.getData(), 0, dp.getLength(), StandardCharsets.UTF_8);
         r.putInPayload("Message", msg.substring(0, msg.indexOf("\0")) + "\n");

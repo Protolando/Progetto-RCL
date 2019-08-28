@@ -8,9 +8,11 @@ import share.RequestType;
 
 public class ClientActionListenerLogin implements ActionListener {
 
-  private TURINGClient parent;
+  /*Listener per ClientGUILogin*/
 
-  public ClientActionListenerLogin(TURINGClient client) {
+  private final TURINGClient parent;
+
+  ClientActionListenerLogin(TURINGClient client) {
     super();
 
     parent = client;
@@ -21,6 +23,7 @@ public class ClientActionListenerLogin implements ActionListener {
     switch (actionEvent.getActionCommand()) {
       case "Register":
         new SwingWorker() {
+          /*In un thread diverso da quello dell'interfaccia*/
           @Override
           protected Object doInBackground() {
             parent.sendRegisterRequest();
@@ -30,7 +33,7 @@ public class ClientActionListenerLogin implements ActionListener {
         break;
       case "Login":
         Request r = new Request(RequestType.LOGIN);
-        parent.sendMessageForResult(r);
+        parent.sendMessage(r);
         break;
     }
   }

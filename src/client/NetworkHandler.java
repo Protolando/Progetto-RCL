@@ -14,28 +14,26 @@ import share.ServerErrorException;
 import share.TURINGRegister;
 import share.UsernameAlreadyUsedException;
 
-public class NetworkHandler {
+class NetworkHandler {
+  /*
+   * Classe che gestisce le comunicazioni di rete ad alto livello.
+   * Thread Safe.
+   */
 
-  private SocketChannel connection;
-  private NetworkInterface networkInterface;
+  private final SocketChannel connection;
+  private final NetworkInterface networkInterface;
 
-  public NetworkHandler() throws IOException {
+  NetworkHandler() throws IOException {
     SocketAddress address = new InetSocketAddress(TURINGClient.ServerAddress,
         TURINGClient.ServerPort);
+    /*Apro il socket channel e istanzio la networkInterface*/
     connection = SocketChannel.open(address);
     networkInterface = new NetworkInterface();
   }
 
-  public Request sendMessageForResult(Request request) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    String msg = mapper.writeValueAsString(request);
-    networkInterface.write(connection, msg);
-
-    return mapper.readValue(networkInterface.read(connection), Request.class);
-  }
-
-  public static void sendRegisterRequest(String username, String password)
+  static void sendRegisterRequest(String username, String password)
       throws UsernameAlreadyUsedException, ServerErrorException {
+    /*Registrazione tramite RMI*/
     try {
       /*Inizializza registry*/
       Registry r = LocateRegistry.getRegistry(TURINGClient.ServerAddress, 3141);
@@ -49,13 +47,27 @@ public class NetworkHandler {
     }
   }
 
-  public void sendMessage(Request r) throws IOException {
+  void sendMessage(Request r) throws IOException {
+    /*Invia un messaggio sulla connessione*/
     ObjectMapper mapper = new ObjectMapper();
     String msg = mapper.writeValueAsString(r);
     networkInterface.write(connection, msg);
   }
 
-  public void disconnect() throws IOException {
+  Request readFromChannel() throws IOException {
+    /*Legge dal canale e restituisce una Request*/
+    ObjectMapper mapper = new ObjectMapper();
+
+    String read = networkInterface.read(connection);
+    if (read == null) {
+      return null;
+    } else {
+      return mapper.readValue(read, Request.class);
+    }
+  }
+
+  void disconnect() throws IOException {
+    /*Disconnette*/
     connection.close();
   }
 }

@@ -1,50 +1,60 @@
 package server;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class ServerFile {
+class ServerFile {
+  /*Classe che rappresenta un file di TURING*/
 
-  private HashMap<Integer, FileSection> openSections;
-  private String owner;
-  private String filename;
-  private String multicastAddress;
+  /*Lista delle sezioni aperte indicizzata per numero di sezione*/
+  private final ConcurrentHashMap<Integer, FileSection> openSections;
+  /*Nome del proprietario*/
+  private final String owner;
+  /*Nome del file*/
+  private final String filename;
+  /*Indirizzo della chat*/
+  private final String multicastAddress;
 
-  public ServerFile(String filename, String owner, String multicastAddress) {
-    this.openSections = new HashMap<>();
+  ServerFile(String filename, String owner, String multicastAddress) {
+    this.openSections = new ConcurrentHashMap<>();
     this.owner = owner;
     this.filename = filename;
     this.multicastAddress = multicastAddress;
   }
 
-  public String getOwner() {
+  String getOwner() {
     return owner;
   }
 
-  public String getMulticastAddress() {
+  String getMulticastAddress() {
     return multicastAddress;
   }
 
-  public void addOpenSection(FileSection section) {
+  void addOpenSection(FileSection section) {
     openSections.put(section.getNSection(), section);
   }
 
-  public FileSection[] getOpenSections() {
+  FileSection[] getOpenSections() {
+    /*Restituisce la lista delle sezioni aperte*/
     return openSections.values().toArray(new FileSection[0]);
   }
 
-  public boolean isInUse(int sectionNumber) {
+  boolean isInUse(int sectionNumber) {
+    /*Restituisce true se il numero di sezione passato come parametro è aperto in modifica da un
+      utente*/
     return (openSections.get(sectionNumber) != null);
   }
 
-  public String getFilename() {
+  String getFilename() {
     return filename;
   }
 
-  public int nSectionOpen() {
+  int nSectionOpen() {
+    /*Restituisce il numero di sezioni del file aperte in modifica dagli utenti*/
     return getOpenSections().length;
   }
 
-  public void removeSection(int section) {
+  void removeSection(int section) {
+    /*Toglie la sezione passata come parametro dalla lista di quelle aperte dagli utenti*/
     openSections.remove(section);
   }
 }

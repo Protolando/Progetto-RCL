@@ -6,6 +6,7 @@ import java.rmi.server.UnicastRemoteObject;
 import share.*;
 
 public class RegistrationServer extends UnicastRemoteObject implements TURINGRegister {
+  /*Classe usata dall'RMI per la registrazione*/
 
   RegistrationServer() throws RemoteException { }
 

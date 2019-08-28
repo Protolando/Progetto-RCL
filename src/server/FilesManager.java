@@ -1,29 +1,44 @@
 package server;
 
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 class FilesManager {
+  /*Struttura dati che mantiene i file aperti dagli utenti */
 
-  private HashMap<String, LinkedList<ServerFile>> files;
+  /*HashMap nome file -> file (hash con collisioni perchè ci possono essere più file con lo
+    stesso nome ma owner diversi, che sono quindi file diversi)*/
+  private final ConcurrentHashMap<String, ConcurrentLinkedQueue<ServerFile>> files;
 
-  public FilesManager() {
-    this.files = new HashMap<>();
+  FilesManager() {
+    this.files = new ConcurrentHashMap<>();
   }
 
-  public void addFile(ServerFile file) {
-    files.computeIfAbsent(file.getFilename(), k -> new LinkedList<>());
+  void addFile(ServerFile file) {
+    /*Aggiunge il file alla struttura*/
+
+    /*Se non c'è un file con il nome uguale a quello passato come parametro nell'hashmap,
+     * creo una nuova linked list */
+    files.computeIfAbsent(file.getFilename(), k -> new ConcurrentLinkedQueue<>());
+
+    /*Per tutti i file nella lista dei file con il nome uguale a quello del file passato come
+     * parametro */
     for (ServerFile f : files.get(file.getFilename())) {
+      /*Se l'owner è uguale esco (il file è già presente)*/
       if (file.getOwner().equals(f.getOwner())) {
         return;
       }
     }
 
+    /*Altrimenti lo inserisco nella lista*/
     files.get(file.getFilename()).add(file);
   }
 
-  public FileSection getOpenEdits(String username) {
-    for (LinkedList<ServerFile> l : files.values()) {
+  FileSection getOpenEdits(String username) {
+    /*Restituisce la sezione che l'utente passato come parametro ha aperto in edit*/
+
+    /*Cerca tra tutti i file aperti sequenzialmente*/
+    for (ConcurrentLinkedQueue<ServerFile> l : files.values()) {
       for (ServerFile f : l) {
         FileSection[] s = f.getOpenSections();
         for (FileSection section : s) {
@@ -36,7 +51,9 @@ class FilesManager {
     return null;
   }
 
-  public void remove(String filename, String ownername) {
+  void remove(String filename, String ownername) {
+    /*Toglie un file dalla lista*/
+
     for (ServerFile f : files.get(filename)) {
       if (f.getOwner().equals(ownername)) {
         files.get(filename).remove(f);
@@ -45,12 +62,16 @@ class FilesManager {
     }
   }
 
-  public ServerFile getFile(String filename, String ownername) {
+  ServerFile getFile(String filename, String ownername) {
+    /*Restituisce il file passato come parametro*/
+
     if (files.get(filename) == null) {
       return null;
     }
 
+    /*Dalla lista dei file con il filename passato come parametro...*/
     for (ServerFile f : files.get(filename)) {
+      /*... cerco quello con l'ownername uguale a quello passato come parametro*/
       if (f.getOwner().equals(ownername)) {
         return f;
       }

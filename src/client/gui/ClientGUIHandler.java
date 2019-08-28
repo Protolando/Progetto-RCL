@@ -1,16 +1,16 @@
 package client.gui;
 
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 public class ClientGUIHandler extends JFrame {
-
-  private ClientGUIElement active;
+  /*
+  * Classe che gestisce la finestra
+  */
 
   public ClientGUIHandler(ClientGUIElement e) {
-    active = e;
+    /*Schermata iniziale*/
     setSize(800, 600);
     setContentPane(e.getPanel());
     setTitle(e.getWindowTitle());
@@ -18,21 +18,23 @@ public class ClientGUIHandler extends JFrame {
     setDefaultCloseOperation(EXIT_ON_CLOSE);
   }
 
-  public void switchPanel(ClientGUIElement e) {
-    active = e;
-    getContentPane().removeAll();
-    setContentPane(e.getPanel());
-    setTitle(e.getWindowTitle());
-    setVisible(true);
+  public synchronized void switchPanel(ClientGUIElement e) {
+    /*Cambia schermata*/
+    SwingUtilities.invokeLater(() -> {
+      getContentPane().removeAll();
+      setContentPane(e.getPanel());
+      setTitle(e.getWindowTitle());
+      setVisible(true);
+    });
   }
 
-  public void setUINotices(String s) {
-    /*Eseguo nel thread dell'UI*/
-    SwingUtilities.invokeLater(() -> active.setUINotices(s));
-  }
-
-  public int showPopup(Object[] message, String title, Object[] options) {
-    return JOptionPane
+  public void showPopup(Object[] message, String title, Object[] options) {
+    /*
+    * message: corpo del messaggio
+    * title: titolo
+    * optons: pulsanti
+    */
+    JOptionPane
         .showOptionDialog(
             this,
             message,

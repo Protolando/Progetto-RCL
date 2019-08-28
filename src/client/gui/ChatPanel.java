@@ -11,16 +11,18 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-public class ChatPanel {
+class ChatPanel {
+  /*Componente grafico che implementa la chat*/
 
-  private JButton button;
-  private JTextArea messages;
-  private JPanel panel;
-  private JTextField newMsg;
+  private final JButton button;
+  private final JTextArea messages;
+  private final JPanel panel;
+  private final JTextField newMsg;
 
-  public ChatPanel() {
+  ChatPanel() {
     ResourceBundle stringsBundle = ResourceBundle.getBundle("client.resources.ClientStrings");
 
+    /*Creo e posiziono i componenti*/
     panel = new JPanel();
     GridBagLayout gridBag = new GridBagLayout();
     GridBagConstraints c = new GridBagConstraints();
@@ -53,19 +55,23 @@ public class ChatPanel {
     panel.add(button);
   }
 
-  public JPanel getPanel() {
+  JPanel getPanel() {
     return panel;
   }
 
-  public void addMessage(String message) {
-    messages.append(message);
+  void addMessage(String message) {
+    synchronized (messages) {
+      messages.append(message);
+    }
   }
 
-  public String getNewMsg() {
-    return newMsg.getText();
+  String getNewMsg() {
+    synchronized (newMsg) {
+      return newMsg.getText();
+    }
   }
 
-  public void addSendActionListener(ActionListener al) {
+  void addSendActionListener(ActionListener al) {
     button.addActionListener(al);
   }
 }

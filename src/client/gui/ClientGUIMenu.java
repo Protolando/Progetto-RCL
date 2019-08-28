@@ -13,17 +13,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 public class ClientGUIMenu implements ClientGUIElement {
+  /*Schermata del menu*/
 
   private final ResourceBundle stringsBundle;
-  private JButton invite;
-  private JButton edit;
-  private JButton show;
-  private JButton showWhole;
-  private JButton update;
-  private JButton logout;
-  private JButton newFile;
-  private JList<String> filesList;
-  private JPanel panel;
+  private final JList<String> filesList;
+  private final JPanel panel;
 
   public ClientGUIMenu(ArrayList<String> DocumentNames, ClientActionListenerMenu al) {
     stringsBundle = ResourceBundle.getBundle("client.resources.ClientStrings");
@@ -52,7 +46,7 @@ public class ClientGUIMenu implements ClientGUIElement {
     c.insets = new Insets(10, 10, 10, 10);
     c.fill = GridBagConstraints.NONE;
 
-    update = new JButton(stringsBundle.getString("Update"));
+    JButton update = new JButton(stringsBundle.getString("Update"));
     c.gridx = 0;
     c.gridy = 1;
     c.weightx = 0.1;
@@ -61,7 +55,7 @@ public class ClientGUIMenu implements ClientGUIElement {
     gridBag.setConstraints(update, c);
     panel.add(update);
 
-    newFile = new JButton(stringsBundle.getString("NewFile"));
+    JButton newFile = new JButton(stringsBundle.getString("NewFile"));
     c.gridx = 0;
     c.gridy = 2;
     c.weightx = 0.1;
@@ -70,7 +64,7 @@ public class ClientGUIMenu implements ClientGUIElement {
     gridBag.setConstraints(newFile, c);
     panel.add(newFile);
 
-    showWhole = new JButton(stringsBundle.getString("ShowWhole"));
+    JButton showWhole = new JButton(stringsBundle.getString("ShowWhole"));
     c.gridx = 0;
     c.gridy = 3;
     c.weightx = 0.1;
@@ -79,7 +73,7 @@ public class ClientGUIMenu implements ClientGUIElement {
     gridBag.setConstraints(showWhole, c);
     panel.add(showWhole);
 
-    invite = new JButton(stringsBundle.getString("Invite"));
+    JButton invite = new JButton(stringsBundle.getString("Invite"));
     c.gridx = 1;
     c.gridy = 1;
     c.weightx = 0.1;
@@ -88,7 +82,7 @@ public class ClientGUIMenu implements ClientGUIElement {
     gridBag.setConstraints(invite, c);
     panel.add(invite);
 
-    edit = new JButton(stringsBundle.getString("Edit"));
+    JButton edit = new JButton(stringsBundle.getString("Edit"));
     c.gridx = 1;
     c.gridy = 2;
     c.weightx = 0.1;
@@ -97,7 +91,7 @@ public class ClientGUIMenu implements ClientGUIElement {
     gridBag.setConstraints(edit, c);
     panel.add(edit);
 
-    show = new JButton(stringsBundle.getString("Show"));
+    JButton show = new JButton(stringsBundle.getString("Show"));
     c.gridx = 1;
     c.gridy = 3;
     c.weightx = 0.1;
@@ -106,7 +100,7 @@ public class ClientGUIMenu implements ClientGUIElement {
     gridBag.setConstraints(show, c);
     panel.add(show);
 
-    logout = new JButton(stringsBundle.getString("Logout"));
+    JButton logout = new JButton(stringsBundle.getString("Logout"));
     c.gridx = 0;
     c.gridy = 4;
     c.weightx = 0.1;
@@ -132,15 +126,14 @@ public class ClientGUIMenu implements ClientGUIElement {
     return stringsBundle.getString("WindowName");
   }
 
-  @Override
-  public void setUINotices(String s) {}
-
   public void updateFileList(ArrayList<String> newFileList) {
-    DefaultListModel<String> model = new DefaultListModel<>();
-    for (String s : newFileList) {
-      model.addElement(s);
+    synchronized (filesList) {
+      DefaultListModel<String> model = new DefaultListModel<>();
+      for (String s : newFileList) {
+        model.addElement(s);
+      }
+      filesList.setModel(model);
     }
-    filesList.setModel(model);
   }
 
   public String getSelected() {

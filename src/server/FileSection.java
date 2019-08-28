@@ -1,26 +1,30 @@
 package server;
 
 public class FileSection {
+  /*Classe che rappresenta la sezione di un file di TURING*/
 
-  private String openBy;
-  private int nSection;
-  private ServerFile file;
+  /*Nome dell'utente che ha aperto la sezione in modifica*/
+  private final String openBy;
+  /*Numero di sezione*/
+  private final int nSection;
+  /*File di cui la sezione fa parte*/
+  private final ServerFile file;
 
-  public FileSection(int nSection, String openBy, ServerFile file) {
+  FileSection(int nSection, String openBy, ServerFile file) {
     this.openBy = openBy;
     this.nSection = nSection;
     this.file = file;
   }
 
-  public String getOpenBy() {
+  String getOpenBy() {
     return openBy;
   }
 
-  public int getNSection() {
+  int getNSection() {
     return nSection;
   }
 
-  public String getFileName() {
+  String getFileName() {
     return file.getFilename();
   }
 

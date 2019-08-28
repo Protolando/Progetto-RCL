@@ -27,6 +27,19 @@ public class ClientStrings extends ListResourceBundle {
         {"ServerError", "Errore di connessione al server"},
         {"RegistrationSuccessful", "Registrazione avvenuta con successo"},
         {"IllegalArgument", "Contenuto dei campi non valido"},
+        {"ConnectionFailed", "Connessione Fallita"},
+        {"tryAgain", "Riprovare"},
+        {"section", "Sezione"},
+        {"insertSectionNum", "Inserire numero di sezione"},
+        {"selectADocument", "Selezionare un documento"},
+        {"CreateFile", "Crea File"},
+        {"FileName", "Nome File: "},
+        {"NumberOfSections", "Numero di Sezioni: "},
+        {"WrongParameters", "Parametri errati"},
+        {"UnexpectedError", "Errore inatteso"},
+        {"insertUser", "Inserire l'utente da invitare"},
+        {"youWereDisconnected", "Sei stato disconnesso dal server"},
+        {"failSendingMessage", "Invio messaggio di chat fallito"},
     };
   }
 }

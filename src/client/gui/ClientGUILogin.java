@@ -12,37 +12,36 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 public class ClientGUILogin implements ClientGUIElement {
-  /*Classe che si occupa di mostrare l'interfaccia utente*/
+  /*Classe che si occupa dell'interfaccia utente della schermata login*/
 
-  private ResourceBundle stringsBundle;
-  private JLabel UINotices;
-  private JTextField passwordField;
-  private JFormattedTextField usernameField;
-  private JPanel panel;
+  /*Stringhe dell'applicazione*/
+  private final ResourceBundle stringsBundle;
+  /*Campi di testo per i dati del login*/
+  private final JFormattedTextField usernameField;
+  private final JTextField passwordField;
+  /*Pannello da passare al JFrame per mostrare la schermata*/
+  private final JPanel panel;
 
   public ClientGUILogin(ClientActionListenerLogin al) {
-    stringsBundle = ResourceBundle.getBundle("client.resources.ClientStrings");
-    panel = new JPanel();
+    /*Il costruttore aggiunge le componenti al pannello e imposta i listener dei bottoni. Richiede
+     * come parametro un listener.
+     */
 
+    /*Leggo le risorse*/
+    stringsBundle = ResourceBundle.getBundle("client.resources.ClientStrings");
+
+    /*Creo il pannello ed inizializzo il layout*/
+    panel = new JPanel();
     GridBagLayout gridBag = new GridBagLayout();
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.CENTER;
-    UINotices = new JLabel();
-    c.gridx = 0;
-    c.gridy = 3;
-    c.gridwidth = 2;
     c.insets = new Insets(10, 10, 10, 10);
-    gridBag.setConstraints(UINotices, c);
-    panel.add(UINotices);
-    UINotices.setVisible(false);
     panel.setLayout(gridBag);
-
     c.gridwidth = 1;
-    c.anchor = GridBagConstraints.CENTER;
 
+    /*Aggiungo componenti al pannello*/
     JLabel usernameLabel = new JLabel(stringsBundle.getString("Username"));
     c.gridx = 0;
     c.gridy = 0;
@@ -95,13 +94,5 @@ public class ClientGUILogin implements ClientGUIElement {
 
   public String getPasswordField() {
     return passwordField.getText();
-  }
-
-  public void setUINotices(String notice) {
-    SwingUtilities.invokeLater(() -> {
-          UINotices.setText(notice);
-          UINotices.setVisible(true);
-        }
-    );
   }
 }
